@@ -3,208 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playlist Data Maker v3.2</title>
+    <title>Ananke Admin Tools</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
-    <style>
-        body { font-family: "Pretendard Variable", sans-serif; background: #f3f4f6; padding: 20px; }
-        textarea { font-family: monospace; font-size: 0.85rem; line-height: 1.5; }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
-<body class="max-w-6xl mx-auto">
+<body class="flex items-center justify-center min-h-screen p-6">
 
-    <h1 class="text-3xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-        🎵 플레이리스트 데이터 생성기 <span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">v3.2 (초기생성 지원)</span>
-    </h1>
+    <div class="max-w-4xl w-full">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-slate-800 mb-2 flex justify-center items-center gap-3">
+                <i data-lucide="wrench" class="w-10 h-10 text-indigo-600"></i> Ananke Admin Tools
+            </h1>
+            <p class="text-slate-500">데이터 관리를 위한 도구를 선택하세요.</p>
+        </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
-            <h2 class="text-xl font-semibold border-b pb-2">1. 신규 곡 정보 입력</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700">곡 제목 (Title)</label>
-                <input type="text" id="newTitle" class="mt-1 block w-full p-2 border rounded-md" placeholder="예: 몽유병자는 차안에서">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">가수 (Artist)</label>
-                <input type="text" id="newArtist" class="mt-1 block w-full p-2 border rounded-md" placeholder="예: 키타니 타츠야">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">유튜브 링크 (Link)</label>
-                <input type="text" id="newLink" class="mt-1 block w-full p-2 border rounded-md" placeholder="https://www.youtube.com/watch?v=...">
-            </div>
-
-            <div class="p-3 bg-purple-50 rounded border border-purple-200">
-                <label class="block text-sm font-bold text-purple-800">번역 출처 (Source)</label>
-                <input type="text" id="newSource" class="mt-1 block w-full p-2 border rounded-md text-sm" placeholder="예: http://vocaro.wikidot.com/...">
-            </div>
-
-            <div>
-                <div class="flex flex-col gap-2 mb-2">
-                    <label class="block text-sm font-medium text-gray-700">가사 (Lyrics)</label>
-                    
-                    <div class="p-2 bg-blue-50 border border-blue-200 rounded">
-                        <span class="text-xs text-blue-800 font-bold block mb-1">🔽 줄바꿈 정리 모드 선택:</span>
-                        <select id="lineOption" class="w-full text-sm border border-blue-300 rounded p-1">
-                            <option value="0">사용 안 함 (그대로 복사)</option>
-                            <optgroup label="패턴 정렬 (일/한 번역 가사용)">
-                                <option value="1">1줄마다 띄기</option>
-                                <option value="2">2줄마다 띄기</option>
-                                <option value="3" selected>3줄마다 띄기 (추천)</option>
-                            </optgroup>
-                            <optgroup label="구조 유지 (복합/영어 가사용)">
-                                <option value="4">✨ 과한 엔터 정리 (최대 1줄 빈칸 유지)</option>
-                                <option value="5">🔥 모든 빈 줄 제거 (빈칸 없이 붙이기)</option>
-                            </optgroup>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1" id="optionDesc">* 3줄마다: 엔터를 싹 지우고 3줄마다 새로 띄웁니다.</p>
-                    </div>
+            <a href="generator.html" class="menu-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center text-center cursor-pointer hover:border-indigo-300 group">
+                <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition">
+                    <i data-lucide="plus" class="w-8 h-8 text-indigo-600"></i>
                 </div>
-                <textarea id="newLyrics" rows="10" class="mt-1 block w-full p-2 border rounded-md" placeholder="가사를 여기에 붙여넣으세요."></textarea>
-            </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">곡 추가 마법사</h2>
+                <p class="text-slate-500 text-sm">새로운 노래를 하나씩 빠르게 추가하고<br>코드를 생성합니다.</p>
+            </a>
+
+            <a href="editor.html" class="menu-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center text-center cursor-pointer hover:border-green-300 group">
+                <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-100 transition">
+                    <i data-lucide="list-music" class="w-8 h-8 text-green-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">통합 편집기</h2>
+                <p class="text-slate-500 text-sm">전체 데이터를 불러와서<br>수정, 삭제, 순서 변경을 수행합니다.</p>
+            </a>
+
         </div>
 
-        <div class="space-y-6">
-            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-400">
-                <h2 class="text-xl font-semibold border-b pb-2 mb-4">2. 현재 data.js 내용 (선택)</h2>
-                <textarea id="oldData" rows="6" class="w-full p-2 border rounded-md bg-gray-50 placeholder-gray-400" placeholder="기존 곡이 있다면 여기에 data.js 전체 내용을 붙여넣으세요.&#13;&#10;✨ 처음 만드는 파일이라면 비워두세요! (알아서 새로 생성합니다)"></textarea>
-            </div>
-
-            <button id="btnGenerate" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg transition transform hover:scale-[1.01]">
-                ✨ 데이터 생성하기
-            </button>
-
-            <div class="bg-white p-6 rounded-lg shadow-md border-2 border-orange-100">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xl font-semibold text-orange-900">3. 결과 (복사해서 저장하세요)</h2>
-                    <button id="btnCopy" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded font-medium">📋 전체 복사</button>
-                </div>
-                <textarea id="resultData" rows="12" class="w-full p-2 border rounded-md bg-slate-800 text-green-400 focus:outline-none focus:ring-2 focus:ring-green-500" readonly></textarea>
-            </div>
-        </div>
+        <footer class="text-center mt-12 text-slate-400 text-xs">
+            &copy; Project Ananke Helper Repository
+        </footer>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            const selectEl = document.getElementById('lineOption');
-            const descEl = document.getElementById('optionDesc');
-            
-            selectEl.addEventListener('change', () => {
-                const val = parseInt(selectEl.value);
-                if (val === 3) descEl.innerText = "* 3줄마다: 엔터를 싹 지우고 3줄마다 새로 띄웁니다. (일-발음-한 패턴)";
-                else if (val === 4) descEl.innerText = "* 과한 엔터 정리: 원래 가사 모양은 유지하되, 너무 넓은 공백만 줄입니다. (혼합 가사 추천)";
-                else if (val === 5) descEl.innerText = "* 모든 빈 줄 제거: 가사 사이의 공백을 모두 없애고 다닥다닥 붙입니다.";
-                else descEl.innerText = "* 선택된 옵션에 따라 가사를 정리합니다.";
-            });
-
-            document.getElementById('btnGenerate').addEventListener('click', generateData);
-            document.getElementById('btnCopy').addEventListener('click', copyResult);
-
-            function generateData() {
-                try {
-                    const oldCode = document.getElementById('oldData').value.trim();
-                    const title = document.getElementById('newTitle').value.trim();
-                    const artist = document.getElementById('newArtist').value.trim();
-                    const link = document.getElementById('newLink').value.trim();
-                    const source = document.getElementById('newSource').value.trim();
-                    let lyricsInput = document.getElementById('newLyrics').value;
-                    const lineOption = parseInt(document.getElementById('lineOption').value);
-
-                    if (!title || !link) {
-                        alert("최소한 '곡 제목'과 '유튜브 링크'는 입력해주세요!");
-                        return;
-                    }
-
-                    // [NEW] 기존 데이터가 있는지 확인 (빈칸이면 새로운 파일 생성 모드)
-                    const isNewFile = oldCode === "" || !oldCode.includes('playlistData');
-                    
-                    let nextId = 1;
-
-                    // 기존 데이터가 있다면 ID 계산
-                    if (!isNewFile) {
-                        const idMatches = oldCode.match(/id:\s*(\d+)/g);
-                        if (idMatches) {
-                            const ids = idMatches.map(str => parseInt(str.replace(/id:\s*/, '')));
-                            nextId = Math.max(...ids) + 1;
-                        }
-                    }
-
-                    // 가사 정렬 로직
-                    let finalLyrics = lyricsInput;
-                    if (lineOption >= 1 && lineOption <= 3) {
-                        const cleanLines = lyricsInput.split('\n').map(l => l.trim()).filter(l => l !== "");
-                        let formatted = "";
-                        for (let i = 0; i < cleanLines.length; i++) {
-                            formatted += cleanLines[i] + "\n";
-                            if ((i + 1) % lineOption === 0 && i !== cleanLines.length - 1) formatted += "\n";
-                        }
-                        finalLyrics = formatted.trim();
-                    } else if (lineOption === 4) {
-                        finalLyrics = lyricsInput.split('\n').map(l => l.trim()).join('\n');
-                        finalLyrics = finalLyrics.replace(/\n{3,}/g, '\n\n').trim();
-                    } else if (lineOption === 5) {
-                        finalLyrics = lyricsInput.split('\n').map(l => l.trim()).join('\n');
-                        finalLyrics = finalLyrics.replace(/\n{2,}/g, '\n').trim();
-                    }
-
-                    if (source) {
-                        if (finalLyrics.length > 0) finalLyrics += `\n\n( 출처 : ${source} )`;
-                        else finalLyrics = `( 출처 : ${source} )`;
-                    }
-                    finalLyrics = finalLyrics.replace(/`/g, "\\`");
-
-                    // 신규 곡 객체 문자열
-                    const newSongStr = `    {
-        id: ${nextId},
-        title: "${title}",
-        artist: "${artist}",
-        link: "${link}",
-        lyrics: \`${finalLyrics}\`
-    }`;
-
-                    let finalCode = "";
-
-                    // [NEW] 분기 처리: 새 파일 생성 vs 기존 파일에 추가
-                    if (isNewFile) {
-                        finalCode = `export const playlistData = [
-${newSongStr}
-];`;
-                    } else {
-                        const lastBracketIndex = oldCode.lastIndexOf(']');
-                        if (lastBracketIndex === -1) {
-                            alert("기존 데이터 형식이 손상된 것 같습니다. (닫는 대괄호 ']' 없음)");
-                            return;
-                        }
-                        const before = oldCode.substring(0, lastBracketIndex).trimEnd();
-                        const comma = before.endsWith(',') ? '' : ',';
-                        const after = oldCode.substring(lastBracketIndex);
-                        finalCode = before + comma + "\n" + newSongStr + "\n" + after;
-                    }
-
-                    document.getElementById('resultData').value = finalCode;
-
-                } catch (error) {
-                    console.error(error);
-                    alert("오류가 발생했습니다: " + error.message);
-                }
-            }
-
-            function copyResult() {
-                const copyText = document.getElementById("resultData");
-                if (!copyText.value) return;
-                copyText.select();
-                copyText.setSelectionRange(0, 99999); 
-                navigator.clipboard.writeText(copyText.value).then(() => {
-                    alert("복사 완료! data.js 파일에 붙여넣거나 저장하세요.");
-                }).catch(err => {
-                    alert("복사 실패. 직접 복사해주세요.");
-                });
-            }
-        });
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
