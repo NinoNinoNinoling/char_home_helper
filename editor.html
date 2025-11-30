@@ -87,17 +87,19 @@
                         <textarea id="editLyrics" rows="10" class="w-full p-2 border rounded resize-none text-sm"></textarea>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-purple-700">출처 추가</label>
+                    <div class="bg-purple-50 p-3 rounded border border-purple-100">
+                        <label class="block text-xs font-bold text-purple-700 mb-1">출처 (자동 분리됨)</label>
                         <div class="flex gap-2">
-                            <input type="text" id="editSource" class="w-full p-2 border border-purple-200 rounded text-sm bg-purple-50" placeholder="http://...">
-                            <button onclick="addSource()" class="shrink-0 text-xs bg-purple-600 text-white px-3 rounded hover:bg-purple-700">추가</button>
+                            <input type="text" id="editSource" class="w-full p-2 border border-purple-200 rounded text-sm bg-white" placeholder="http://...">
+                            <div class="text-xs text-purple-400 flex items-center shrink-0">
+                                * 저장 시 가사 맨 끝에 자동으로 붙습니다.
+                            </div>
                         </div>
                     </div>
 
                     <div class="pt-4 border-t flex justify-between">
                         <button onclick="deleteSong()" class="text-red-500 text-sm hover:underline">🗑️ 삭제</button>
-                        <button onclick="saveSong()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded font-bold shadow">
+                        <button onclick="saveSong()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded font-bold shadow transition transform hover:scale-105">
                             적용 (임시 저장)
                         </button>
                     </div>
@@ -145,16 +147,34 @@
             });
         }
 
+        // [핵심] 가사와 출처를 분리해서 폼에 채우기
         function openForm(idx) {
             currentIndex = idx;
             const s = loadedSongs[idx];
             document.getElementById('editForm').classList.remove('hidden');
             document.getElementById('currentId').innerText = `ID: ${s.id}`;
+            
             document.getElementById('editTitle').value = s.title;
             document.getElementById('editArtist').value = s.artist || "";
             document.getElementById('editLink').value = s.link;
-            document.getElementById('editLyrics').value = s.lyrics || "";
-            document.getElementById('editSource').value = "";
+
+            // 가사 파싱 로직
+            let fullLyrics = s.lyrics || "";
+            let sourceUrl = "";
+
+            // 정규식: 마지막 줄에 ( 출처 : http... ) 패턴이 있는지 검사
+            // 띄어쓰기가 있든 없든 유연하게 잡도록 (?:\s*) 사용
+            const sourceRegex = /\(\s*출처\s*:\s*(https?:\/\/[^)\s]+)\s*\)$/i;
+            const match = fullLyrics.trim().match(sourceRegex);
+
+            if (match) {
+                sourceUrl = match[1]; // URL 부분만 추출
+                // 가사에서 출처 부분 제거 (앞의 줄바꿈도 제거)
+                fullLyrics = fullLyrics.replace(match[0], "").trim();
+            }
+
+            document.getElementById('editLyrics').value = fullLyrics;
+            document.getElementById('editSource').value = sourceUrl;
         }
 
         function addNewSong() {
@@ -167,6 +187,7 @@
         function applyFormat() {
             const opt = parseInt(document.getElementById('formatOption').value);
             let txt = document.getElementById('editLyrics').value;
+            // 출처는 이미 분리되어 있으므로 순수 가사만 정렬됨
             if (opt === 3) {
                 const lines = txt.split('\n').map(l => l.trim()).filter(l => l !== "");
                 let fmt = "";
@@ -183,20 +204,25 @@
             document.getElementById('editLyrics').value = txt;
         }
 
-        function addSource() {
-            const src = document.getElementById('editSource').value.trim();
-            if(!src) return;
-            let val = document.getElementById('editLyrics').value.trim();
-            document.getElementById('editLyrics').value = val ? val + `\n\n( 출처 : ${src} )` : `( 출처 : ${src} )`;
-        }
-
+        // [핵심] 저장할 때 가사와 출처 다시 합치기
         function saveSong() {
             if(currentIndex === -1) return;
             const s = loadedSongs[currentIndex];
+            
             s.title = document.getElementById('editTitle').value;
             s.artist = document.getElementById('editArtist').value;
             s.link = document.getElementById('editLink').value;
-            s.lyrics = document.getElementById('editLyrics').value;
+            
+            let lyricsBody = document.getElementById('editLyrics').value.trim();
+            const sourceUrl = document.getElementById('editSource').value.trim();
+
+            if(sourceUrl) {
+                // 가사가 있으면 두 줄 띄고, 없으면 그냥 추가
+                if(lyricsBody) lyricsBody += `\n\n( 출처 : ${sourceUrl} )`;
+                else lyricsBody = `( 출처 : ${sourceUrl} )`;
+            }
+            s.lyrics = lyricsBody;
+
             renderList();
             alert("적용되었습니다. 꼭 '전체 코드 저장'을 해주세요.");
         }
