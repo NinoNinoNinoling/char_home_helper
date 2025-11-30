@@ -72,8 +72,19 @@
                         <input type="text" id="editLink" class="w-full p-2 border rounded">
                     </div>
 
-                    <div class="bg-blue-50 p-3 rounded border border-blue-100">
-                        <div class="flex justify-between items-center mb-2">
+                    <div class="grid grid-cols-1 gap-2 p-3 bg-blue-50 rounded border border-blue-100">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500">해시태그 (쉼표 구분)</label>
+                            <input type="text" id="editTags" class="w-full p-2 border rounded text-sm" placeholder="#신남, #우울">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500">코멘트</label>
+                            <input type="text" id="editComment" class="w-full p-2 border rounded text-sm" placeholder="캐릭터의 한마디...">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
                             <label class="block text-xs font-bold text-slate-700">가사 편집</label>
                             <div class="flex gap-2">
                                 <select id="formatOption" class="text-xs border rounded p-1">
@@ -147,7 +158,6 @@
             });
         }
 
-        // [핵심] 가사와 출처를 분리해서 폼에 채우기
         function openForm(idx) {
             currentIndex = idx;
             const s = loadedSongs[idx];
@@ -157,19 +167,19 @@
             document.getElementById('editTitle').value = s.title;
             document.getElementById('editArtist').value = s.artist || "";
             document.getElementById('editLink').value = s.link;
+            
+            // [NEW] 해시태그 & 코멘트 로드
+            document.getElementById('editTags').value = (s.hashtags || []).join(', ');
+            document.getElementById('editComment').value = s.comment || "";
 
-            // 가사 파싱 로직
+            // 가사 파싱
             let fullLyrics = s.lyrics || "";
             let sourceUrl = "";
-
-            // 정규식: 마지막 줄에 ( 출처 : http... ) 패턴이 있는지 검사
-            // 띄어쓰기가 있든 없든 유연하게 잡도록 (?:\s*) 사용
             const sourceRegex = /\(\s*출처\s*:\s*(https?:\/\/[^)\s]+)\s*\)$/i;
             const match = fullLyrics.trim().match(sourceRegex);
 
             if (match) {
-                sourceUrl = match[1]; // URL 부분만 추출
-                // 가사에서 출처 부분 제거 (앞의 줄바꿈도 제거)
+                sourceUrl = match[1];
                 fullLyrics = fullLyrics.replace(match[0], "").trim();
             }
 
@@ -179,7 +189,7 @@
 
         function addNewSong() {
             let maxId = loadedSongs.length > 0 ? Math.max(...loadedSongs.map(s => s.id)) : 0;
-            loadedSongs.push({ id: maxId + 1, title: "새 노래", artist: "", link: "", lyrics: "" });
+            loadedSongs.push({ id: maxId + 1, title: "새 노래", artist: "", link: "", lyrics: "", hashtags: [], comment: "" });
             renderList();
             openForm(loadedSongs.length - 1);
         }
@@ -187,7 +197,6 @@
         function applyFormat() {
             const opt = parseInt(document.getElementById('formatOption').value);
             let txt = document.getElementById('editLyrics').value;
-            // 출처는 이미 분리되어 있으므로 순수 가사만 정렬됨
             if (opt === 3) {
                 const lines = txt.split('\n').map(l => l.trim()).filter(l => l !== "");
                 let fmt = "";
@@ -204,7 +213,6 @@
             document.getElementById('editLyrics').value = txt;
         }
 
-        // [핵심] 저장할 때 가사와 출처 다시 합치기
         function saveSong() {
             if(currentIndex === -1) return;
             const s = loadedSongs[currentIndex];
@@ -213,11 +221,20 @@
             s.artist = document.getElementById('editArtist').value;
             s.link = document.getElementById('editLink').value;
             
+            // [NEW] 해시태그 & 코멘트 저장
+            let tagsStr = document.getElementById('editTags').value;
+            s.hashtags = tagsStr.split(',').map(t => {
+                t = t.trim();
+                if(!t) return null;
+                return t.startsWith('#') ? t : '#' + t;
+            }).filter(t => t);
+            
+            s.comment = document.getElementById('editComment').value;
+
             let lyricsBody = document.getElementById('editLyrics').value.trim();
             const sourceUrl = document.getElementById('editSource').value.trim();
 
             if(sourceUrl) {
-                // 가사가 있으면 두 줄 띄고, 없으면 그냥 추가
                 if(lyricsBody) lyricsBody += `\n\n( 출처 : ${sourceUrl} )`;
                 else lyricsBody = `( 출처 : ${sourceUrl} )`;
             }
@@ -239,7 +256,18 @@
         function exportData() {
             const json = loadedSongs.map(s => {
                 const safeLyrics = (s.lyrics || "").replace(/`/g, "\\`");
-                return `    { id: ${s.id}, title: "${s.title}", artist: "${s.artist}", link: "${s.link}", lyrics: \`${safeLyrics}\` }`;
+                const safeComment = (s.comment || "").replace(/"/g, '\\"');
+                const hashtagsJson = JSON.stringify(s.hashtags || []);
+                
+                return `    {
+        id: ${s.id},
+        title: "${s.title}",
+        artist: "${s.artist}",
+        link: "${s.link}",
+        hashtags: ${hashtagsJson},
+        comment: "${safeComment}",
+        lyrics: \`${safeLyrics}\`
+    }`;
             }).join(',\n');
             const code = `export const playlistData = [\n${json}\n];`;
             const area = document.getElementById('exportArea');
