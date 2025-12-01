@@ -187,7 +187,15 @@
 
         function addNewSong() {
             let maxId = loadedSongs.length > 0 ? Math.max(...loadedSongs.map(s => s.id)) : 0;
-            loadedSongs.push({ id: maxId + 1, title: "새 노래", artist: "", link: "", lyrics: "", hashtags: [], comment: "" });
+            loadedSongs.push({
+                id: maxId + 1,
+                title: "새 노래",
+                artist: "",
+                link: "",
+                hashtags: [],
+                comment: "",
+                lyrics: ""
+            });
             renderList();
             openForm(loadedSongs.length - 1);
         }
@@ -227,14 +235,17 @@
                 const commentVal = document.getElementById('editComment').value;
                 s.comment = commentVal ? commentVal.trim() : "";
 
-                // 3. 해시태그 저장 (에러 방지용 try-catch)
+                // 3. 해시태그 저장 (에러 방지용 try-catch + 개선된 파싱)
                 try {
-                    let tagsStr = document.getElementById('editTags').value;
-                    s.hashtags = tagsStr.split(',').map(t => {
-                        t = t.trim();
-                        if(!t) return null;
-                        return t.startsWith('#') ? t : '#' + t;
-                    }).filter(t => t);
+                    let tagsStr = (document.getElementById('editTags').value || "").trim();
+                    if (!tagsStr) {
+                        s.hashtags = [];
+                    } else {
+                        s.hashtags = tagsStr.split(',')
+                            .map(t => t.trim())
+                            .filter(t => t.length > 0)  // 빈 문자열 제거
+                            .map(t => t.startsWith('#') ? t : '#' + t);
+                    }
                 } catch(e) {
                     console.error("Tag parse error", e);
                     s.hashtags = [];
@@ -275,28 +286,38 @@
         function exportData() {
             // 현재 편집 중인 내용 강제 저장
             if (currentIndex !== -1) {
-                saveSong(true); 
+                saveSong(true);
             }
 
             const json = loadedSongs.map(s => {
                 const safeTitle = (s.title || "").replace(/"/g, '\\"');
                 const safeArtist = (s.artist || "").replace(/"/g, '\\"');
                 const safeLyrics = (s.lyrics || "").replace(/`/g, "\\`");
-                // 코멘트 이스케이프 처리
                 const safeComment = (s.comment || "").replace(/"/g, '\\"');
-                const hashtagsJson = JSON.stringify(s.hashtags || []);
-                
-                return `    {
-        id: ${s.id},
-        title: "${safeTitle}",
-        artist: "${safeArtist}",
-        link: "${s.link}",
-        hashtags: ${hashtagsJson},
-        comment: "${safeComment}",
-        lyrics: \`${safeLyrics}\`
-    }`;
+
+                // 필드 동적 생성 (빈 값 처리)
+                let fields = [];
+                fields.push(`id: ${s.id}`);
+                fields.push(`title: "${safeTitle}"`);
+                fields.push(`artist: "${safeArtist}"`);
+                fields.push(`link: "${s.link}"`);
+
+                // hashtags: 배열이 비어있지 않을 때만 포함
+                if (s.hashtags && s.hashtags.length > 0) {
+                    fields.push(`hashtags: ${JSON.stringify(s.hashtags)}`);
+                }
+
+                // comment: 값이 있을 때만 포함
+                if (safeComment) {
+                    fields.push(`comment: "${safeComment}"`);
+                }
+
+                fields.push(`lyrics: \`${safeLyrics}\``);
+
+                const fieldStr = fields.map(f => `        ${f}`).join(',\n');
+                return `    {\n${fieldStr}\n    }`;
             }).join(',\n');
-            
+
             const code = `export const playlistData = [\n${json}\n];`;
             const area = document.getElementById('exportArea');
             area.classList.remove('hidden');
