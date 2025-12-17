@@ -29,6 +29,7 @@
             <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
                 placeholder="export const config = {...}"></textarea>
             <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <button onclick="startNew()" class="btn btn-primary">새로 시작</button>
             <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500">로드됨</div>
         </div>
     </div>
@@ -169,6 +170,68 @@
             { key: 'videoLoadDelay', label: '비디오 로드 딜레이' },
             { key: 'bgMusicSwitchDelay', label: '배경음악 전환 딜레이' }
         ];
+
+        function startNew() {
+            data = {
+                labels: {
+                    name: "NAME",
+                    basicInfo: "BASIC INFO",
+                    birthInfo: "BIRTH INFO",
+                    magicInfo: "MAGIC INFO",
+                    relationships: "RELATIONSHIPS",
+                    heightWeight: "키 / 체중",
+                    affiliation: "소속",
+                    nationality: "국적",
+                    blood: "혈통",
+                    birthday: "생일",
+                    birthFlowerTree: "탄생화 / 탄생목",
+                    birthStone: "탄생석",
+                    birthColor: "탄생색",
+                    wand: "지팡이",
+                    wandLength: "길이 / 유연성",
+                    themeColor: "테마색",
+                    moodSong: "무드곡"
+                },
+                theme: {
+                    colors: {
+                        background: "#0a0a0c",
+                        secondary: "#111114",
+                        tertiary: "#1a1a1e",
+                        text: "#e8e6e3",
+                        highlight: "#B2B0E8",
+                        border: "rgba(255, 255, 255, 0.04)"
+                    }
+                },
+                features: {
+                    showAgeTabs: true,
+                    snowEffect: false
+                },
+                player: {
+                    width: 360,
+                    height: 203,
+                    defaultVolume: 20,
+                    playerVars: { playsinline: 1, controls: 0, disablekb: 1, fs: 0, rel: 0, autoplay: 0 }
+                },
+                defaults: { age: 11, section: 'dashboard' },
+                components: {
+                    dashboard: 'components/dashboard.html',
+                    playlist: 'components/playlist.html',
+                    motif: 'components/motif.html',
+                    guide: 'components/about.html'
+                },
+                timing: {
+                    bgMusicInitDelay: 1000,
+                    iconRenderDelay: 50,
+                    videoLoadDelay: 100,
+                    bgMusicSwitchDelay: 500
+                },
+                bgMusicSections: ['dashboard'],
+                keepBgMusicSections: ['motif', 'guide']
+            };
+            renderSections();
+            document.getElementById('inputBlocker').classList.remove('hidden');
+            HelperUtils.showToast('기본 설정으로 시작!', 'success');
+        }
 
         function loadData() {
             const raw = document.getElementById('inputCode').value.trim();
