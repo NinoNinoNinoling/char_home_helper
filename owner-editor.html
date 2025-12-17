@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오너 프로필 편집기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="utils.js"></script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-100">
+
+    <nav class="bg-white border-b px-6 py-3 flex justify-between items-center z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-slate-500 hover:text-indigo-600"><i data-lucide="arrow-left"></i></a>
+            <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="id-card" class="text-teal-600"></i> 오너 프로필 편집기
+            </h1>
+        </div>
+        <button onclick="exportData()" class="btn btn-success">
+            <i data-lucide="save" class="w-4 h-4"></i> 코드 생성
+        </button>
+    </nav>
+
+    <div class="bg-white border-b p-4 shrink-0">
+        <label class="form-label">📂 owner.js 코드 붙여넣기</label>
+        <div class="flex gap-2 relative">
+            <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
+                placeholder="export const ownerData = {...}"></textarea>
+            <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500">로드됨</div>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-hidden grid grid-cols-12">
+        <div class="col-span-3 bg-white border-r flex flex-col overflow-hidden">
+            <div class="p-3 bg-slate-50 border-b font-bold text-sm text-slate-700">섹션</div>
+            <div id="sectionList" class="flex-1 overflow-y-auto p-2 space-y-1 bg-slate-50">
+                <div class="text-center text-gray-400 text-xs mt-10">데이터를 불러와주세요</div>
+            </div>
+        </div>
+
+        <div class="col-span-9 bg-slate-50 overflow-y-auto p-6" id="rightPanel">
+            <!-- 기본 정보 -->
+            <div id="basicForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header"><h2 class="font-bold">📝 기본 정보</h2></div>
+                <div class="card-body space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">닉네임</label>
+                            <input type="text" id="basic_name" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">표시 이름</label>
+                            <input type="text" id="basic_nameStyle" class="form-input">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">프로필 이미지 URL</label>
+                        <input type="text" id="basic_profileImage" class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">마스코트 이미지 URL</label>
+                        <input type="text" id="basic_mascotImage" class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">대표 인용구</label>
+                        <input type="text" id="basic_quote" class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">소개 (줄바꿈 구분)</label>
+                        <textarea id="basic_description" rows="3" class="form-input form-textarea"></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label">태그 (쉼표 구분)</label>
+                        <input type="text" id="basic_tags" class="form-input">
+                    </div>
+                    <div class="border-t pt-4">
+                        <h3 class="font-bold text-sm mb-3">🔊 배경 음악</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">YouTube ID</label>
+                                <input type="text" id="basic_bgMusicId" class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">제목</label>
+                                <input type="text" id="basic_bgMusicTitle" class="form-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t flex justify-end">
+                        <button onclick="saveBasic()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 정보 그리드 편집기 -->
+            <div id="gridForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header flex justify-between items-center">
+                    <h2 class="font-bold" id="gridTitle">정보</h2>
+                    <button onclick="addGridItem()" class="text-xs bg-indigo-500 text-white px-2 py-1 rounded">+ 추가</button>
+                </div>
+                <div class="card-body">
+                    <div id="gridItems" class="space-y-2"></div>
+                    <div class="pt-4 border-t flex justify-end mt-4">
+                        <button onclick="saveGrid()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 링크 편집기 -->
+            <div id="linksForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header flex justify-between items-center">
+                    <h2 class="font-bold">🔗 외부 링크</h2>
+                    <button onclick="addLink()" class="text-xs bg-indigo-500 text-white px-2 py-1 rounded">+ 추가</button>
+                </div>
+                <div class="card-body">
+                    <div id="linksItems" class="space-y-3"></div>
+                    <div class="pt-4 border-t flex justify-end mt-4">
+                        <button onclick="saveLinks()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 출력 -->
+            <div id="exportArea" class="hidden mt-6 code-output max-w-3xl mx-auto">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-green-400 font-bold">✅ 코드 생성 완료</span>
+                    <button onclick="copyCode()" class="btn btn-success text-sm">📋 복사</button>
+                </div>
+                <textarea id="exportResult" rows="20" class="w-full" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let data = null;
+        let currentSection = null;
+        let currentGridKey = null;
+
+        const gridSections = [
+            { key: 'ownerInfo', label: '👤 오너 정보', title: '오너 정보' },
+            { key: 'communication', label: '💬 교류 정보', title: '교류 정보' },
+            { key: 'mention', label: '📢 챙김 & 언급', title: '챙김 & 언급' },
+            { key: 'contact', label: '📞 연락 & 조율', title: '연락 & 조율' },
+            { key: 'fanwork', label: '🎨 연성 정보', title: '연성 정보' }
+        ];
+
+        function loadData() {
+            const raw = document.getElementById('inputCode').value.trim();
+            if (!raw) return alert('코드를 붙여넣어 주세요.');
+            try {
+                data = HelperUtils.parseExportData(raw, 'ownerData');
+                renderSections();
+                document.getElementById('inputBlocker').classList.remove('hidden');
+                HelperUtils.showToast('로드 완료!', 'success');
+            } catch (e) { alert('로드 실패: ' + e.message); }
+        }
+
+        function renderSections() {
+            document.getElementById('sectionList').innerHTML = `
+                <div class="list-item ${currentSection === 'basic' ? 'active' : ''}" onclick="showBasic()">
+                    <span class="font-medium text-sm">📝 기본 정보</span>
+                </div>
+                ${gridSections.map(s => `
+                    <div class="list-item ${currentSection === s.key ? 'active' : ''}" onclick="showGrid('${s.key}')">
+                        <span class="font-medium text-sm">${s.label}</span>
+                    </div>
+                `).join('')}
+                <div class="list-item ${currentSection === 'links' ? 'active' : ''}" onclick="showLinks()">
+                    <span class="font-medium text-sm">🔗 외부 링크</span>
+                </div>
+            `;
+        }
+
+        function hideAll() {
+            ['basicForm', 'gridForm', 'linksForm', 'exportArea'].forEach(id => 
+                document.getElementById(id).classList.add('hidden'));
+        }
+
+        function showBasic() {
+            hideAll();
+            currentSection = 'basic';
+            document.getElementById('basic_name').value = data.name || '';
+            document.getElementById('basic_nameStyle').value = data.nameStyle || '';
+            document.getElementById('basic_profileImage').value = data.profileImage || '';
+            document.getElementById('basic_mascotImage').value = data.mascotImage || '';
+            document.getElementById('basic_quote').value = data.quote || '';
+            document.getElementById('basic_description').value = (data.description || []).join('\n');
+            document.getElementById('basic_tags').value = (data.tags || []).join(', ');
+            document.getElementById('basic_bgMusicId').value = data.bgMusic?.youtubeId || '';
+            document.getElementById('basic_bgMusicTitle').value = data.bgMusic?.title || '';
+            document.getElementById('basicForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function saveBasic() {
+            data.name = document.getElementById('basic_name').value;
+            data.nameStyle = document.getElementById('basic_nameStyle').value;
+            data.profileImage = document.getElementById('basic_profileImage').value;
+            data.mascotImage = document.getElementById('basic_mascotImage').value;
+            data.quote = document.getElementById('basic_quote').value;
+            data.description = document.getElementById('basic_description').value.split('\n').filter(l => l);
+            data.tags = document.getElementById('basic_tags').value.split(',').map(t => t.trim()).filter(t => t);
+            data.bgMusic = {
+                youtubeId: document.getElementById('basic_bgMusicId').value,
+                title: document.getElementById('basic_bgMusicTitle').value
+            };
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showGrid(key) {
+            hideAll();
+            currentSection = key;
+            currentGridKey = key;
+            const sec = gridSections.find(s => s.key === key);
+            document.getElementById('gridTitle').textContent = sec.title;
+            renderGridItems(data[key] || []);
+            document.getElementById('gridForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function renderGridItems(items) {
+            document.getElementById('gridItems').innerHTML = items.length === 0 
+                ? '<div class="text-sm text-slate-400">항목이 없습니다</div>'
+                : items.map((item, idx) => `
+                    <div class="flex gap-2 items-center bg-slate-50 p-2 rounded">
+                        <input type="text" class="form-input flex-1 text-sm grid-label" value="${item.label || ''}" placeholder="라벨">
+                        <input type="text" class="form-input flex-[2] text-sm grid-value" value="${item.value || ''}" placeholder="값">
+                        <button onclick="removeGridItem(${idx})" class="text-red-500 text-xs">×</button>
+                    </div>
+                `).join('');
+        }
+
+        function addGridItem() {
+            if (!data[currentGridKey]) data[currentGridKey] = [];
+            data[currentGridKey].push({ label: '', value: '' });
+            renderGridItems(data[currentGridKey]);
+        }
+
+        function removeGridItem(idx) {
+            data[currentGridKey].splice(idx, 1);
+            renderGridItems(data[currentGridKey]);
+        }
+
+        function saveGrid() {
+            const rows = document.getElementById('gridItems').querySelectorAll('.bg-slate-50');
+            data[currentGridKey] = Array.from(rows).map(row => ({
+                label: row.querySelector('.grid-label').value,
+                value: row.querySelector('.grid-value').value
+            }));
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showLinks() {
+            hideAll();
+            currentSection = 'links';
+            renderLinkItems(data.links || []);
+            document.getElementById('linksForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function renderLinkItems(items) {
+            document.getElementById('linksItems').innerHTML = items.length === 0
+                ? '<div class="text-sm text-slate-400">링크가 없습니다</div>'
+                : items.map((item, idx) => `
+                    <div class="bg-slate-50 p-3 rounded space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium">${item.text || '링크'}</span>
+                            <button onclick="removeLink(${idx})" class="text-red-500 text-xs">삭제</button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="text" class="form-input text-sm link-icon" value="${item.icon || ''}" placeholder="아이콘 (lucide)">
+                            <input type="text" class="form-input text-sm link-text" value="${item.text || ''}" placeholder="텍스트">
+                            <input type="text" class="form-input text-sm link-url" value="${item.url || ''}" placeholder="URL">
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function addLink() {
+            if (!data.links) data.links = [];
+            data.links.push({ icon: 'link', text: '', url: '' });
+            renderLinkItems(data.links);
+        }
+
+        function removeLink(idx) {
+            data.links.splice(idx, 1);
+            renderLinkItems(data.links);
+        }
+
+        function saveLinks() {
+            const rows = document.getElementById('linksItems').querySelectorAll('.bg-slate-50');
+            data.links = Array.from(rows).map(row => ({
+                icon: row.querySelector('.link-icon').value,
+                text: row.querySelector('.link-text').value,
+                url: row.querySelector('.link-url').value
+            }));
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function exportData() {
+            if (currentSection === 'basic') saveBasic();
+            if (gridSections.some(s => s.key === currentSection)) saveGrid();
+            if (currentSection === 'links') saveLinks();
+            
+            const code = HelperUtils.generateOwnerCode(data);
+            document.getElementById('exportArea').classList.remove('hidden');
+            document.getElementById('exportResult').value = code;
+            document.getElementById('exportArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyCode() {
+            HelperUtils.copyToClipboard(document.getElementById('exportResult').value);
+            HelperUtils.showToast('복사되었습니다!', 'success');
+        }
+    </script>
+</body>
+</html>
