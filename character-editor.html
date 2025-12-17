@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캐릭터 편집기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="utils.js"></script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-100">
+
+    <!-- 네비게이션 -->
+    <nav class="bg-white border-b px-6 py-3 flex justify-between items-center z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-slate-500 hover:text-indigo-600">
+                <i data-lucide="arrow-left"></i>
+            </a>
+            <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="user-cog" class="text-purple-600"></i>
+                캐릭터 편집기
+            </h1>
+        </div>
+        <button onclick="exportData()" class="btn btn-success">
+            <i data-lucide="save" class="w-4 h-4"></i> 코드 생성
+        </button>
+    </nav>
+
+    <!-- 데이터 불러오기 -->
+    <div class="bg-white border-b p-4 shrink-0">
+        <label class="form-label">📂 character.js 코드 붙여넣기</label>
+        <div class="flex gap-2 relative">
+            <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
+                placeholder="export const characterData = {...} 형식의 코드를 붙여넣으세요"></textarea>
+            <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500 cursor-not-allowed">
+                이미 불러왔습니다
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 영역 -->
+    <div class="flex-1 overflow-hidden grid grid-cols-12">
+        <!-- 좌측: 섹션 메뉴 -->
+        <div class="col-span-3 bg-white border-r flex flex-col overflow-hidden">
+            <div class="p-3 bg-slate-50 border-b">
+                <span class="font-bold text-sm text-slate-700">섹션 선택</span>
+            </div>
+            <div id="sectionList" class="flex-1 overflow-y-auto p-2 space-y-1 bg-slate-50">
+                <div class="text-center text-gray-400 text-xs mt-10">데이터를 불러와주세요</div>
+            </div>
+        </div>
+
+        <!-- 우측: 편집 영역 -->
+        <div class="col-span-9 bg-slate-50 overflow-y-auto p-6" id="rightPanel">
+            <!-- 공통 정보 편집 -->
+            <div id="commonForm" class="hidden max-w-3xl mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="font-bold text-slate-700">🌐 공통 정보 (common)</h2>
+                    </div>
+                    <div class="card-body space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">생일</label>
+                                <input type="text" id="common_birthday" class="form-input" placeholder="11월 29일">
+                            </div>
+                            <div>
+                                <label class="form-label">탄생화</label>
+                                <input type="text" id="common_birthFlower" class="form-input">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">탄생목</label>
+                                <input type="text" id="common_birthTree" class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">탄생석</label>
+                                <input type="text" id="common_birthStone" class="form-input">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">탄생색 이름</label>
+                                <input type="text" id="common_birthColorName" class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">탄생색 HEX</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="common_birthColorPicker" class="w-10 h-10 rounded cursor-pointer">
+                                    <input type="text" id="common_birthColorHex" class="form-input flex-1" placeholder="#8B0000">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-t pt-4 mt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3">🪄 지팡이 정보</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">목재</label>
+                                    <input type="text" id="common_wandWood" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">심</label>
+                                    <input type="text" id="common_wandCore" class="form-input">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label class="form-label">길이</label>
+                                    <input type="text" id="common_wandLength" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">유연성</label>
+                                    <input type="text" id="common_wandFlexibility" class="form-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                            <div>
+                                <label class="form-label">혈통</label>
+                                <input type="text" id="common_bloodStatus" class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">모에화</label>
+                                <input type="text" id="common_moehua" class="form-input">
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t flex justify-end">
+                            <button onclick="saveCommon()" class="btn btn-primary">
+                                <i data-lucide="check" class="w-4 h-4"></i> 적용
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 나이별 프로필 편집 -->
+            <div id="profileForm" class="hidden max-w-3xl mx-auto">
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <h2 class="font-bold text-slate-700">👤 프로필: <span id="profileAge">-</span></h2>
+                        <button onclick="deleteProfile()" class="btn btn-danger text-xs">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i> 삭제
+                        </button>
+                    </div>
+                    <div class="card-body space-y-4">
+                        <!-- 탭 라벨 & 테마 -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">탭 라벨</label>
+                                <input type="text" id="profile_tabLabel" class="form-input" placeholder="1학년 (11세)">
+                            </div>
+                            <div>
+                                <label class="form-label">테마 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="profile_themeColorPicker" class="w-10 h-10 rounded cursor-pointer">
+                                    <input type="text" id="profile_themeColor" class="form-input flex-1" placeholder="#FFD800">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 이름 -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">이름 (한글)</label>
+                                <input type="text" id="profile_nameKr" class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">이름 (영문)</label>
+                                <input type="text" id="profile_nameEn" class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- 이미지 -->
+                        <div>
+                            <label class="form-label">이미지 URL</label>
+                            <input type="text" id="profile_image" class="form-input" placeholder="https://...">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">이미지 크레딧</label>
+                                <input type="text" id="profile_imageCreditText" class="form-input" placeholder="@작가명">
+                            </div>
+                            <div>
+                                <label class="form-label">크레딧 URL</label>
+                                <input type="text" id="profile_imageCreditUrl" class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- 소속 -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">소속 타입</label>
+                                <select id="profile_affiliationType" class="form-input">
+                                    <option value="house">기숙사 (house)</option>
+                                    <option value="order">기사단 (order)</option>
+                                    <option value="faction">진영 (faction)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">소속 이름</label>
+                                <input type="text" id="profile_affiliationName" class="form-input" placeholder="HUFFLEPUFF">
+                            </div>
+                        </div>
+
+                        <!-- 명제 -->
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3">📜 명제</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">번호</label>
+                                    <input type="text" id="profile_propNumber" class="form-input" placeholder="제 1 명제">
+                                </div>
+                                <div>
+                                    <label class="form-label">한자</label>
+                                    <input type="text" id="profile_propKanji" class="form-input" placeholder="定">
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">설명 (HTML 태그 가능)</label>
+                                <input type="text" id="profile_propDesc" class="form-input" placeholder="모든 <em>미래</em>는 불변한다.">
+                            </div>
+                        </div>
+
+                        <!-- 한마디 -->
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3">💬 한마디</h3>
+                            <div>
+                                <label class="form-label">메인 (HTML 태그 가능)</label>
+                                <input type="text" id="profile_quoteMain" class="form-input">
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">서브</label>
+                                <input type="text" id="profile_quoteSub" class="form-input">
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">설명 (줄바꿈으로 구분)</label>
+                                <textarea id="profile_quoteDesc" rows="3" class="form-input form-textarea"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 성격 -->
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3">🎭 성격</h3>
+                            <div>
+                                <label class="form-label">태그 (쉼표로 구분)</label>
+                                <input type="text" id="profile_personalityTags" class="form-input" placeholder="#무신경, #무반응, #무감각">
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">설명 (줄바꿈으로 구분)</label>
+                                <textarea id="profile_personalityDesc" rows="4" class="form-input form-textarea"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 기본 스탯 -->
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3">📊 기본 스탯</h3>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="form-label">나이</label>
+                                    <input type="text" id="profile_basicAge" class="form-input" placeholder="11세 (1학년)">
+                                </div>
+                                <div>
+                                    <label class="form-label">키</label>
+                                    <input type="text" id="profile_basicHeight" class="form-input" placeholder="130cm">
+                                </div>
+                                <div>
+                                    <label class="form-label">체중</label>
+                                    <input type="text" id="profile_basicWeight" class="form-input" placeholder="25kg">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label class="form-label">기숙사/진영</label>
+                                    <input type="text" id="profile_basicHouse" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">국적</label>
+                                    <input type="text" id="profile_basicNationality" class="form-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 무드곡 -->
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3">🎵 무드곡</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">제목</label>
+                                    <input type="text" id="profile_moodSongTitle" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">아티스트</label>
+                                    <input type="text" id="profile_moodSongArtist" class="form-input">
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">URL</label>
+                                <input type="text" id="profile_moodSongUrl" class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- 배경음악 -->
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3">🔊 배경 음악</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">YouTube ID</label>
+                                    <input type="text" id="profile_bgMusicId" class="form-input" placeholder="dQw4w9WgXcQ">
+                                </div>
+                                <div>
+                                    <label class="form-label">제목</label>
+                                    <input type="text" id="profile_bgMusicTitle" class="form-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 관계 -->
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-sm text-slate-600 mb-3 flex justify-between items-center">
+                                <span>👥 관계</span>
+                                <button onclick="addRelation()" class="text-xs bg-indigo-500 text-white px-2 py-1 rounded">+ 추가</button>
+                            </h3>
+                            <div id="relationsContainer" class="space-y-3"></div>
+                        </div>
+
+                        <div class="pt-4 border-t flex justify-end">
+                            <button onclick="saveProfile()" class="btn btn-primary">
+                                <i data-lucide="check" class="w-4 h-4"></i> 적용
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 새 프로필 추가 -->
+            <div id="addProfileForm" class="hidden max-w-md mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="font-bold text-slate-700">➕ 새 프로필 추가</h2>
+                    </div>
+                    <div class="card-body space-y-4">
+                        <div>
+                            <label class="form-label">나이 (숫자, 키값으로 사용)</label>
+                            <input type="number" id="newProfileAge" class="form-input" placeholder="11">
+                        </div>
+                        <button onclick="createProfile()" class="btn btn-primary w-full">생성</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 코드 출력 -->
+            <div id="exportArea" class="hidden mt-6 code-output max-w-3xl mx-auto">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-green-400 font-bold">✅ 코드 생성 완료</span>
+                    <button onclick="copyCode()" class="btn btn-success text-sm">📋 복사</button>
+                </div>
+                <textarea id="exportResult" rows="20" class="w-full" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let data = null;
+        let currentSection = null;
+        let currentAge = null;
+
+        function loadData() {
+            const raw = document.getElementById('inputCode').value.trim();
+            if (!raw) return alert('코드를 붙여넣어 주세요.');
+            
+            try {
+                data = HelperUtils.parseExportData(raw, 'characterData');
+                renderSections();
+                document.getElementById('inputBlocker').classList.remove('hidden');
+                document.getElementById('inputCode').disabled = true;
+                HelperUtils.showToast('데이터 로드 완료!', 'success');
+            } catch (e) {
+                alert('로드 실패: ' + e.message);
+            }
+        }
+
+        function renderSections() {
+            const list = document.getElementById('sectionList');
+            const ages = Object.keys(data.profiles || {});
+            
+            list.innerHTML = `
+                <div class="list-item ${currentSection === 'common' ? 'active' : ''}" onclick="showCommon()">
+                    <span class="font-medium text-sm">🌐 공통 정보</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-3 mb-1 px-2">나이별 프로필</div>
+                ${ages.map(age => `
+                    <div class="list-item ${currentSection === 'profile' && currentAge === age ? 'active' : ''}" onclick="showProfile('${age}')">
+                        <span class="font-medium text-sm">${data.profiles[age].tabLabel || age + '세'}</span>
+                    </div>
+                `).join('')}
+                <div class="list-item mt-2" onclick="showAddProfile()">
+                    <span class="text-indigo-600 font-medium text-sm">+ 새 프로필 추가</span>
+                </div>
+            `;
+        }
+
+        function hideAllForms() {
+            document.getElementById('commonForm').classList.add('hidden');
+            document.getElementById('profileForm').classList.add('hidden');
+            document.getElementById('addProfileForm').classList.add('hidden');
+            document.getElementById('exportArea').classList.add('hidden');
+        }
+
+        function showCommon() {
+            hideAllForms();
+            currentSection = 'common';
+            currentAge = null;
+            
+            const c = data.common;
+            document.getElementById('common_birthday').value = c.birthday || '';
+            document.getElementById('common_birthFlower').value = c.birthFlower || '';
+            document.getElementById('common_birthTree').value = c.birthTree || '';
+            document.getElementById('common_birthStone').value = c.birthStone || '';
+            document.getElementById('common_birthColorName').value = c.birthColor?.name || '';
+            document.getElementById('common_birthColorHex').value = c.birthColor?.hex || '';
+            document.getElementById('common_birthColorPicker').value = c.birthColor?.hex || '#000000';
+            document.getElementById('common_wandWood').value = c.wand?.wood || '';
+            document.getElementById('common_wandCore').value = c.wand?.core || '';
+            document.getElementById('common_wandLength').value = c.wand?.length || '';
+            document.getElementById('common_wandFlexibility').value = c.wand?.flexibility || '';
+            document.getElementById('common_bloodStatus').value = c.bloodStatus || '';
+            document.getElementById('common_moehua').value = c.moehua || '';
+            
+            document.getElementById('commonForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function saveCommon() {
+            data.common = {
+                birthday: document.getElementById('common_birthday').value,
+                birthFlower: document.getElementById('common_birthFlower').value,
+                birthTree: document.getElementById('common_birthTree').value,
+                birthStone: document.getElementById('common_birthStone').value,
+                birthColor: {
+                    name: document.getElementById('common_birthColorName').value,
+                    hex: document.getElementById('common_birthColorHex').value
+                },
+                wand: {
+                    wood: document.getElementById('common_wandWood').value,
+                    core: document.getElementById('common_wandCore').value,
+                    length: document.getElementById('common_wandLength').value,
+                    flexibility: document.getElementById('common_wandFlexibility').value
+                },
+                bloodStatus: document.getElementById('common_bloodStatus').value,
+                moehua: document.getElementById('common_moehua').value
+            };
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showProfile(age) {
+            hideAllForms();
+            currentSection = 'profile';
+            currentAge = age;
+            
+            const p = data.profiles[age];
+            document.getElementById('profileAge').textContent = p.tabLabel || age + '세';
+            
+            document.getElementById('profile_tabLabel').value = p.tabLabel || '';
+            document.getElementById('profile_themeColor').value = p.themeColor || '';
+            document.getElementById('profile_themeColorPicker').value = p.themeColor || '#000000';
+            document.getElementById('profile_nameKr').value = p.name?.kr || '';
+            document.getElementById('profile_nameEn').value = p.name?.en || '';
+            document.getElementById('profile_image').value = p.image || '';
+            document.getElementById('profile_imageCreditText').value = p.imageCredit?.text || '';
+            document.getElementById('profile_imageCreditUrl').value = p.imageCredit?.url || '';
+            document.getElementById('profile_affiliationType').value = p.affiliation?.type || 'house';
+            document.getElementById('profile_affiliationName').value = p.affiliation?.name || '';
+            document.getElementById('profile_propNumber').value = p.proposition?.number || '';
+            document.getElementById('profile_propKanji').value = p.proposition?.kanji || '';
+            document.getElementById('profile_propDesc').value = p.proposition?.description || '';
+            document.getElementById('profile_quoteMain').value = p.quote?.main || '';
+            document.getElementById('profile_quoteSub').value = p.quote?.sub || '';
+            document.getElementById('profile_quoteDesc').value = (p.quote?.description || []).join('\n');
+            document.getElementById('profile_personalityTags').value = (p.personality?.tags || []).join(', ');
+            document.getElementById('profile_personalityDesc').value = (p.personality?.description || []).join('\n');
+            document.getElementById('profile_basicAge').value = p.basic?.age || '';
+            document.getElementById('profile_basicHeight').value = p.basic?.height || '';
+            document.getElementById('profile_basicWeight').value = p.basic?.weight || '';
+            document.getElementById('profile_basicHouse').value = p.basic?.house || p.basic?.faction || '';
+            document.getElementById('profile_basicNationality').value = p.basic?.nationality || '';
+            document.getElementById('profile_moodSongTitle').value = p.magic?.moodSong?.title || '';
+            document.getElementById('profile_moodSongArtist').value = p.magic?.moodSong?.artist || '';
+            document.getElementById('profile_moodSongUrl').value = p.magic?.moodSong?.url || '';
+            document.getElementById('profile_bgMusicId').value = p.bgMusic?.youtubeId || '';
+            document.getElementById('profile_bgMusicTitle').value = p.bgMusic?.title || '';
+            
+            renderRelations(p.relationships || []);
+            
+            document.getElementById('profileForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function renderRelations(relations) {
+            const container = document.getElementById('relationsContainer');
+            if (relations.length === 0) {
+                container.innerHTML = '<div class="text-sm text-slate-400">등록된 관계가 없습니다</div>';
+                return;
+            }
+            container.innerHTML = relations.map((rel, idx) => `
+                <div class="bg-slate-50 p-3 rounded border space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-sm">${rel.name}</span>
+                        <button onclick="removeRelation(${idx})" class="text-red-500 text-xs">삭제</button>
+                    </div>
+                    <input type="text" class="form-input text-sm rel-name" value="${rel.name || ''}" placeholder="이름">
+                    <input type="text" class="form-input text-sm rel-initial" value="${rel.initial || ''}" placeholder="이니셜">
+                    <textarea class="form-input form-textarea text-sm rel-detail" rows="2" placeholder="설명">${rel.detail || ''}</textarea>
+                </div>
+            `).join('');
+        }
+
+        function addRelation() {
+            const p = data.profiles[currentAge];
+            if (!p.relationships) p.relationships = [];
+            p.relationships.push({ name: '새 관계', initial: '', detail: '' });
+            renderRelations(p.relationships);
+        }
+
+        function removeRelation(idx) {
+            const p = data.profiles[currentAge];
+            p.relationships.splice(idx, 1);
+            renderRelations(p.relationships);
+        }
+
+        function saveProfile() {
+            const p = data.profiles[currentAge];
+            
+            p.tabLabel = document.getElementById('profile_tabLabel').value;
+            p.themeColor = document.getElementById('profile_themeColor').value;
+            p.name = {
+                kr: document.getElementById('profile_nameKr').value,
+                en: document.getElementById('profile_nameEn').value
+            };
+            p.image = document.getElementById('profile_image').value;
+            p.imageCredit = {
+                text: document.getElementById('profile_imageCreditText').value,
+                url: document.getElementById('profile_imageCreditUrl').value
+            };
+            p.affiliation = {
+                type: document.getElementById('profile_affiliationType').value,
+                name: document.getElementById('profile_affiliationName').value
+            };
+            p.proposition = {
+                number: document.getElementById('profile_propNumber').value,
+                kanji: document.getElementById('profile_propKanji').value,
+                description: document.getElementById('profile_propDesc').value
+            };
+            p.quote = {
+                main: document.getElementById('profile_quoteMain').value,
+                sub: document.getElementById('profile_quoteSub').value || null,
+                description: document.getElementById('profile_quoteDesc').value.split('\n').filter(l => l.trim() !== '' || l === '')
+            };
+            p.personality = {
+                tags: document.getElementById('profile_personalityTags').value.split(',').map(t => t.trim()).filter(t => t),
+                description: document.getElementById('profile_personalityDesc').value.split('\n')
+            };
+            p.basic = {
+                age: document.getElementById('profile_basicAge').value,
+                height: document.getElementById('profile_basicHeight').value,
+                weight: document.getElementById('profile_basicWeight').value,
+                house: document.getElementById('profile_basicHouse').value,
+                nationality: document.getElementById('profile_basicNationality').value
+            };
+            p.magic = {
+                moodSong: {
+                    title: document.getElementById('profile_moodSongTitle').value,
+                    artist: document.getElementById('profile_moodSongArtist').value,
+                    url: document.getElementById('profile_moodSongUrl').value
+                }
+            };
+            p.bgMusic = {
+                youtubeId: document.getElementById('profile_bgMusicId').value,
+                title: document.getElementById('profile_bgMusicTitle').value
+            };
+            
+            // 관계 저장
+            const relEls = document.getElementById('relationsContainer').querySelectorAll('.bg-slate-50');
+            p.relationships = Array.from(relEls).map(el => ({
+                name: el.querySelector('.rel-name').value,
+                initial: el.querySelector('.rel-initial').value,
+                detail: el.querySelector('.rel-detail').value
+            }));
+            
+            renderSections();
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showAddProfile() {
+            hideAllForms();
+            currentSection = 'add';
+            document.getElementById('addProfileForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function createProfile() {
+            const age = document.getElementById('newProfileAge').value;
+            if (!age) return alert('나이를 입력하세요.');
+            if (data.profiles[age]) return alert('이미 존재하는 나이입니다.');
+            
+            data.profiles[age] = {
+                tabLabel: `${age}세`,
+                themeColor: '#888888',
+                name: { kr: '', en: '' },
+                image: '',
+                imageCredit: { text: '', url: '' },
+                affiliation: { type: 'house', name: '' },
+                proposition: { number: '', kanji: '', description: '' },
+                quote: { main: '', sub: null, description: [] },
+                personality: { tags: [], description: [] },
+                basic: { age: '', height: '', weight: '', house: '', nationality: '' },
+                magic: { moodSong: { title: '', artist: '', url: '' } },
+                relationships: [],
+                bgMusic: { youtubeId: '', title: '' }
+            };
+            
+            showProfile(age);
+            HelperUtils.showToast('프로필 생성됨', 'success');
+        }
+
+        function deleteProfile() {
+            if (!confirm(`${currentAge}세 프로필을 삭제하시겠습니까?`)) return;
+            delete data.profiles[currentAge];
+            hideAllForms();
+            currentSection = null;
+            currentAge = null;
+            renderSections();
+        }
+
+        function exportData() {
+            if (currentSection === 'common') saveCommon();
+            if (currentSection === 'profile') saveProfile();
+            
+            const code = HelperUtils.generateCharacterCode(data);
+            document.getElementById('exportArea').classList.remove('hidden');
+            document.getElementById('exportResult').value = code;
+            document.getElementById('exportArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyCode() {
+            HelperUtils.copyToClipboard(document.getElementById('exportResult').value);
+            HelperUtils.showToast('복사되었습니다!', 'success');
+        }
+
+        // 색상 피커 동기화
+        document.getElementById('common_birthColorPicker').addEventListener('input', e => {
+            document.getElementById('common_birthColorHex').value = e.target.value;
+        });
+        document.getElementById('profile_themeColorPicker').addEventListener('input', e => {
+            document.getElementById('profile_themeColor').value = e.target.value;
+        });
+    </script>
+</body>
+</html>
