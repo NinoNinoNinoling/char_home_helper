@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모티프 편집기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="utils.js"></script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-100">
+
+    <nav class="bg-white border-b px-6 py-3 flex justify-between items-center z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-slate-500 hover:text-indigo-600"><i data-lucide="arrow-left"></i></a>
+            <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="sparkles" class="text-orange-600"></i> 모티프 편집기
+            </h1>
+        </div>
+        <button onclick="exportData()" class="btn btn-success">
+            <i data-lucide="save" class="w-4 h-4"></i> 코드 생성
+        </button>
+    </nav>
+
+    <div class="bg-white border-b p-4 shrink-0">
+        <label class="form-label">📂 motif.js 코드 붙여넣기</label>
+        <div class="flex gap-2 relative">
+            <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
+                placeholder="export const motifData = [...]"></textarea>
+            <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500">로드됨</div>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-hidden grid grid-cols-12">
+        <div class="col-span-3 bg-white border-r flex flex-col overflow-hidden">
+            <div class="p-3 bg-slate-50 border-b flex justify-between items-center">
+                <span class="font-bold text-sm text-slate-700">모티프 (<span id="itemCount">0</span>)</span>
+                <button onclick="addItem()" class="text-xs bg-indigo-500 text-white px-2 py-1 rounded">+ 추가</button>
+            </div>
+            <div id="itemList" class="flex-1 overflow-y-auto p-2 space-y-1 bg-slate-50">
+                <div class="text-center text-gray-400 text-xs mt-10">데이터를 불러와주세요</div>
+            </div>
+        </div>
+
+        <div class="col-span-9 bg-slate-50 overflow-y-auto p-6">
+            <div id="editForm" class="hidden max-w-2xl mx-auto card">
+                <div class="card-header flex justify-between items-center">
+                    <h2 class="font-bold">📝 모티프 편집</h2>
+                    <span id="currentIdx" class="text-xs bg-slate-200 px-2 py-1 rounded">#-</span>
+                </div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="form-label">이미지 URL</label>
+                        <input type="text" id="edit_image" class="form-input">
+                        <div id="imagePreview" class="mt-2 hidden">
+                            <img src="" alt="미리보기" class="w-32 h-32 object-cover rounded border">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">이름/제목</label>
+                        <input type="text" id="edit_title" class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">출처</label>
+                        <input type="text" id="edit_source" class="form-input" placeholder="작품명">
+                    </div>
+                    <div>
+                        <label class="form-label">설명</label>
+                        <textarea id="edit_description" rows="4" class="form-input form-textarea"></textarea>
+                    </div>
+                    <div class="pt-4 border-t flex justify-between">
+                        <button onclick="deleteItem()" class="btn btn-danger text-sm">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> 삭제
+                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="moveItem(-1)" class="btn btn-secondary text-sm">↑ 위로</button>
+                            <button onclick="moveItem(1)" class="btn btn-secondary text-sm">↓ 아래로</button>
+                            <button onclick="saveItem()" class="btn btn-primary">적용</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="exportArea" class="hidden mt-6 code-output max-w-2xl mx-auto">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-green-400 font-bold">✅ 코드 생성 완료</span>
+                    <button onclick="copyCode()" class="btn btn-success text-sm">📋 복사</button>
+                </div>
+                <textarea id="exportResult" rows="15" class="w-full" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let items = [];
+        let currentIndex = -1;
+
+        function loadData() {
+            const raw = document.getElementById('inputCode').value.trim();
+            if (!raw) return alert('코드를 붙여넣어 주세요.');
+            try {
+                items = HelperUtils.parseExportData(raw, 'motifData');
+                renderList();
+                document.getElementById('inputBlocker').classList.remove('hidden');
+                HelperUtils.showToast(`${items.length}개 모티프 로드!`, 'success');
+            } catch (e) { alert('로드 실패: ' + e.message); }
+        }
+
+        function renderList() {
+            document.getElementById('itemCount').textContent = items.length;
+            if (items.length === 0) {
+                document.getElementById('itemList').innerHTML = '<div class="text-center text-gray-400 text-xs mt-10">모티프가 없습니다</div>';
+                return;
+            }
+            document.getElementById('itemList').innerHTML = items.map((item, idx) => `
+                <div class="list-item ${idx === currentIndex ? 'active' : ''}" onclick="openForm(${idx})">
+                    <span class="truncate font-medium text-sm">${item.title || '(이름 없음)'}</span>
+                    <span class="text-xs text-slate-400">${item.source || ''}</span>
+                </div>
+            `).join('');
+        }
+
+        function openForm(idx) {
+            currentIndex = idx;
+            const item = items[idx];
+            document.getElementById('editForm').classList.remove('hidden');
+            document.getElementById('currentIdx').textContent = `#${idx + 1}`;
+            document.getElementById('edit_image').value = item.image || '';
+            document.getElementById('edit_title').value = item.title || '';
+            document.getElementById('edit_source').value = item.source || '';
+            document.getElementById('edit_description').value = item.description || '';
+            updatePreview();
+            document.getElementById('exportArea').classList.add('hidden');
+            renderList();
+        }
+
+        function updatePreview() {
+            const url = document.getElementById('edit_image').value;
+            const preview = document.getElementById('imagePreview');
+            if (url) {
+                preview.querySelector('img').src = url;
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('edit_image').addEventListener('input', updatePreview);
+
+        function addItem() {
+            items.push({ image: '', title: '새 모티프', source: '', description: '' });
+            renderList();
+            openForm(items.length - 1);
+        }
+
+        function saveItem() {
+            if (currentIndex === -1) return;
+            items[currentIndex] = {
+                image: document.getElementById('edit_image').value,
+                title: document.getElementById('edit_title').value,
+                source: document.getElementById('edit_source').value,
+                description: document.getElementById('edit_description').value
+            };
+            renderList();
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function deleteItem() {
+            if (currentIndex === -1) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            items.splice(currentIndex, 1);
+            document.getElementById('editForm').classList.add('hidden');
+            currentIndex = -1;
+            renderList();
+        }
+
+        function moveItem(dir) {
+            if (currentIndex === -1) return;
+            const newIdx = currentIndex + dir;
+            if (newIdx < 0 || newIdx >= items.length) return;
+            [items[currentIndex], items[newIdx]] = [items[newIdx], items[currentIndex]];
+            currentIndex = newIdx;
+            renderList();
+            HelperUtils.showToast('이동됨', 'success');
+        }
+
+        function exportData() {
+            if (currentIndex !== -1) saveItem();
+            const code = HelperUtils.generateMotifCode(items);
+            document.getElementById('exportArea').classList.remove('hidden');
+            document.getElementById('exportResult').value = code;
+            document.getElementById('exportArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyCode() {
+            HelperUtils.copyToClipboard(document.getElementById('exportResult').value);
+            HelperUtils.showToast('복사되었습니다!', 'success');
+        }
+    </script>
+</body>
+</html>
