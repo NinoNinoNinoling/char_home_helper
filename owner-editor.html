@@ -29,6 +29,7 @@
             <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
                 placeholder="export const ownerData = {...}"></textarea>
             <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <button onclick="startNew()" class="btn btn-primary">새로 시작</button>
             <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500">로드됨</div>
         </div>
     </div>
@@ -148,6 +149,28 @@
             { key: 'contact', label: '📞 연락 & 조율', title: '연락 & 조율' },
             { key: 'fanwork', label: '🎨 연성 정보', title: '연성 정보' }
         ];
+
+        function startNew() {
+            data = {
+                profileImage: "",
+                mascotImage: "",
+                name: "",
+                nameStyle: "",
+                quote: "",
+                description: [],
+                tags: [],
+                ownerInfo: [],
+                communication: [],
+                mention: [],
+                contact: [],
+                fanwork: [],
+                links: [],
+                bgMusic: { youtubeId: "", title: "" }
+            };
+            renderSections();
+            document.getElementById('inputBlocker').classList.remove('hidden');
+            HelperUtils.showToast('새 오너 프로필 시작!', 'success');
+        }
 
         function loadData() {
             const raw = document.getElementById('inputCode').value.trim();
