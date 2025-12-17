@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>플레이리스트 편집기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="utils.js"></script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-100">
+
+    <!-- 네비게이션 -->
+    <nav class="bg-white border-b px-6 py-3 flex justify-between items-center z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-slate-500 hover:text-indigo-600 transition">
+                <i data-lucide="arrow-left"></i>
+            </a>
+            <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="list-music" class="text-green-600"></i> 
+                플레이리스트 편집기
+            </h1>
+        </div>
+        <button onclick="exportData()" class="btn btn-success">
+            <i data-lucide="save" class="w-4 h-4"></i> 코드 생성
+        </button>
+    </nav>
+
+    <!-- 데이터 불러오기 -->
+    <div class="bg-white border-b p-4 shrink-0">
+        <label class="form-label">📂 playlist.js 코드 붙여넣기</label>
+        <div class="flex gap-2 relative">
+            <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
+                placeholder="export const playlistData = [...] 형식의 코드를 붙여넣으세요"></textarea>
+            <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500 cursor-not-allowed">
+                이미 불러왔습니다
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 영역 -->
+    <div class="flex-1 overflow-hidden grid grid-cols-12">
+        <!-- 좌측: 곡 목록 -->
+        <div class="col-span-3 bg-white border-r flex flex-col overflow-hidden">
+            <div class="p-3 bg-slate-50 border-b flex justify-between items-center">
+                <span class="font-bold text-sm text-slate-700">곡 목록 (<span id="songCount">0</span>)</span>
+                <button onclick="addItem()" class="text-xs bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600">+ 추가</button>
+            </div>
+            <div id="itemList" class="flex-1 overflow-y-auto p-2 space-y-1 bg-slate-50">
+                <div class="text-center text-gray-400 text-xs mt-10">데이터를 불러와주세요</div>
+            </div>
+        </div>
+
+        <!-- 우측: 편집 폼 -->
+        <div class="col-span-9 bg-slate-50 flex flex-col overflow-y-auto p-6" id="rightPanel">
+            <div id="editForm" class="max-w-3xl mx-auto w-full bg-white rounded-xl shadow p-6 hidden">
+                <h2 class="text-lg font-bold border-b pb-2 mb-4 flex justify-between">
+                    <span>📝 상세 정보 수정</span>
+                    <span id="currentId" class="text-xs bg-slate-200 px-2 py-1 rounded">ID: -</span>
+                </h2>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">곡 제목</label>
+                            <input type="text" id="editTitle" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">아티스트</label>
+                            <input type="text" id="editArtist" class="form-input">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">YouTube 링크</label>
+                        <input type="text" id="editLink" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+
+                    <div>
+                        <label class="form-label">해시태그 (쉼표로 구분)</label>
+                        <input type="text" id="editTags" class="form-input" placeholder="#태그1, #태그2">
+                    </div>
+
+                    <div>
+                        <label class="form-label">코멘트</label>
+                        <input type="text" id="editComment" class="form-input" placeholder="이 곡에 대한 한줄평">
+                    </div>
+
+                    <div>
+                        <label class="form-label flex justify-between">
+                            <span>가사</span>
+                            <select id="formatOption" class="text-xs border rounded px-2 py-1">
+                                <option value="0">포맷 없음</option>
+                                <option value="3">3줄마다 빈 줄</option>
+                                <option value="4">빈 줄 정리 (2줄→1줄)</option>
+                                <option value="5">모든 빈 줄 제거</option>
+                            </select>
+                        </label>
+                        <textarea id="editLyrics" class="form-input form-textarea h-40"></textarea>
+                        <div class="flex gap-2 mt-2">
+                            <input type="text" id="editSource" class="form-input flex-1" placeholder="가사 출처 URL (선택)">
+                            <button onclick="applyFormat()" class="btn btn-secondary text-xs">포맷 적용</button>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t flex justify-between">
+                        <button onclick="deleteItem()" class="btn btn-danger text-sm">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> 삭제
+                        </button>
+                        <button onclick="saveItem()" class="btn btn-primary">
+                            <i data-lucide="check" class="w-4 h-4"></i> 적용
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 코드 출력 -->
+            <div id="exportArea" class="hidden mt-6 code-output max-w-3xl mx-auto w-full">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-green-400 font-bold">✅ 코드 생성 완료</span>
+                    <button onclick="copyCode()" class="btn btn-success text-sm">📋 복사</button>
+                </div>
+                <textarea id="exportResult" rows="12" class="w-full" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let items = [];
+        let currentIndex = -1;
+
+        function loadData() {
+            const raw = document.getElementById('inputCode').value.trim();
+            if (!raw) return alert('코드를 붙여넣어 주세요.');
+            
+            try {
+                items = HelperUtils.parseExportData(raw, 'playlistData');
+                renderList();
+                document.getElementById('inputBlocker').classList.remove('hidden');
+                document.getElementById('inputCode').disabled = true;
+                HelperUtils.showToast(`${items.length}곡 로드 완료!`, 'success');
+            } catch (e) {
+                alert('로드 실패: ' + e.message);
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('itemList');
+            document.getElementById('songCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-400 text-xs mt-10">곡이 없습니다</div>';
+                return;
+            }
+            
+            list.innerHTML = items.map((item, idx) => `
+                <div class="list-item ${idx === currentIndex ? 'active' : ''}" onclick="openForm(${idx})">
+                    <span class="truncate font-medium text-sm">${item.id}. ${item.title || '(제목 없음)'}</span>
+                    <span class="text-xs text-slate-400">${item.artist || ''}</span>
+                </div>
+            `).join('');
+        }
+
+        function openForm(idx) {
+            currentIndex = idx;
+            const item = items[idx];
+            
+            document.getElementById('editForm').classList.remove('hidden');
+            document.getElementById('currentId').textContent = `ID: ${item.id}`;
+            document.getElementById('editTitle').value = item.title || '';
+            document.getElementById('editArtist').value = item.artist || '';
+            document.getElementById('editLink').value = item.link || '';
+            document.getElementById('editTags').value = (item.hashtags || []).join(', ');
+            document.getElementById('editComment').value = item.comment || '';
+            
+            // 가사에서 출처 분리
+            let lyrics = item.lyrics || '';
+            let source = '';
+            const match = lyrics.trim().match(/\(\s*출처\s*:\s*(https?:\/\/[^)\s]+)\s*\)$/i);
+            if (match) {
+                source = match[1];
+                lyrics = lyrics.replace(match[0], '').trim();
+            }
+            document.getElementById('editLyrics').value = lyrics;
+            document.getElementById('editSource').value = source;
+            
+            document.getElementById('exportArea').classList.add('hidden');
+            renderList();
+        }
+
+        function addItem() {
+            const newId = HelperUtils.getNextId(items);
+            items.push({
+                id: newId,
+                title: '새 노래',
+                artist: '',
+                link: '',
+                hashtags: [],
+                comment: '',
+                lyrics: ''
+            });
+            renderList();
+            openForm(items.length - 1);
+        }
+
+        function saveItem() {
+            if (currentIndex === -1) return;
+            
+            const item = items[currentIndex];
+            item.title = document.getElementById('editTitle').value;
+            item.artist = document.getElementById('editArtist').value;
+            item.link = document.getElementById('editLink').value;
+            item.comment = document.getElementById('editComment').value;
+            
+            // 해시태그 파싱
+            const tagsRaw = document.getElementById('editTags').value;
+            item.hashtags = tagsRaw.split(',')
+                .map(t => t.trim())
+                .filter(t => t)
+                .map(t => t.startsWith('#') ? t : '#' + t);
+            
+            // 가사 + 출처
+            let lyrics = document.getElementById('editLyrics').value;
+            const source = document.getElementById('editSource').value.trim();
+            if (source) {
+                lyrics = lyrics.trim() + `\n\n( 출처 : ${source} )`;
+            }
+            item.lyrics = lyrics;
+            
+            renderList();
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function deleteItem() {
+            if (currentIndex === -1) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            
+            items.splice(currentIndex, 1);
+            document.getElementById('editForm').classList.add('hidden');
+            currentIndex = -1;
+            renderList();
+        }
+
+        function applyFormat() {
+            const option = parseInt(document.getElementById('formatOption').value);
+            let text = document.getElementById('editLyrics').value;
+            document.getElementById('editLyrics').value = HelperUtils.formatLyrics(text, option, '');
+        }
+
+        function exportData() {
+            if (currentIndex !== -1) saveItem();
+            
+            const code = HelperUtils.generatePlaylistCode(items);
+            document.getElementById('exportArea').classList.remove('hidden');
+            document.getElementById('exportResult').value = code;
+            document.getElementById('exportArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyCode() {
+            const code = document.getElementById('exportResult').value;
+            HelperUtils.copyToClipboard(code);
+            HelperUtils.showToast('복사되었습니다!', 'success');
+        }
+    </script>
+</body>
+</html>
