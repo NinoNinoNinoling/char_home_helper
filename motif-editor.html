@@ -29,6 +29,7 @@
             <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
                 placeholder="export const motifData = [...]"></textarea>
             <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <button onclick="startNew()" class="btn btn-primary">새로 시작</button>
             <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500">로드됨</div>
         </div>
     </div>
@@ -98,6 +99,13 @@
         
         let items = [];
         let currentIndex = -1;
+
+        function startNew() {
+            items = [];
+            renderList();
+            document.getElementById('inputBlocker').classList.remove('hidden');
+            HelperUtils.showToast('새 모티프 목록 시작!', 'success');
+        }
 
         function loadData() {
             const raw = document.getElementById('inputCode').value.trim();
