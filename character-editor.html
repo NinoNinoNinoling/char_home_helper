@@ -137,11 +137,11 @@
                 </div>
             </div>
 
-            <!-- 나이별 프로필 편집 -->
+            <!-- 프로필 편집 -->
             <div id="profileForm" class="hidden max-w-3xl mx-auto">
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h2 class="font-bold text-slate-700">👤 프로필: <span id="profileAge">-</span></h2>
+                        <h2 class="font-bold text-slate-700">👤 프로필: <span id="profileKey">-</span></h2>
                         <button onclick="deleteProfile()" class="btn btn-danger text-xs">
                             <i data-lucide="trash-2" class="w-3 h-3"></i> 삭제
                         </button>
@@ -150,8 +150,8 @@
                         <!-- 탭 라벨 & 테마 -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="form-label">탭 라벨</label>
-                                <input type="text" id="profile_tabLabel" class="form-input" placeholder="1학년 (11세)">
+                                <label class="form-label">탭 라벨 (표시명)</label>
+                                <input type="text" id="profile_tabLabel" class="form-input" placeholder="1학년 (11세) 또는 캐릭터A">
                             </div>
                             <div>
                                 <label class="form-label">테마 색상</label>
@@ -344,8 +344,8 @@
                     </div>
                     <div class="card-body space-y-4">
                         <div>
-                            <label class="form-label">나이 (숫자, 키값으로 사용)</label>
-                            <input type="number" id="newProfileAge" class="form-input" placeholder="11">
+                            <label class="form-label">프로필 키 (나이, 캐릭터명 등 자유롭게)</label>
+                            <input type="text" id="newProfileKey" class="form-input" placeholder="11, characterA, 모리슨 등">
                         </div>
                         <button onclick="createProfile()" class="btn btn-primary w-full">생성</button>
                     </div>
@@ -368,7 +368,7 @@
         
         let data = null;
         let currentSection = null;
-        let currentAge = null;
+        let currentKey = null;
 
         function startNew() {
             data = {
@@ -407,16 +407,16 @@
 
         function renderSections() {
             const list = document.getElementById('sectionList');
-            const ages = Object.keys(data.profiles || {});
+            const keys = Object.keys(data.profiles || {});
             
             list.innerHTML = `
                 <div class="list-item ${currentSection === 'common' ? 'active' : ''}" onclick="showCommon()">
                     <span class="font-medium text-sm">🌐 공통 정보</span>
                 </div>
-                <div class="text-xs text-slate-500 mt-3 mb-1 px-2">나이별 프로필</div>
-                ${ages.map(age => `
-                    <div class="list-item ${currentSection === 'profile' && currentAge === age ? 'active' : ''}" onclick="showProfile('${age}')">
-                        <span class="font-medium text-sm">${data.profiles[age].tabLabel || age + '세'}</span>
+                <div class="text-xs text-slate-500 mt-3 mb-1 px-2">프로필 목록</div>
+                ${keys.map(key => `
+                    <div class="list-item ${currentSection === 'profile' && currentKey === key ? 'active' : ''}" onclick="showProfile('${key}')">
+                        <span class="font-medium text-sm">${data.profiles[key].tabLabel || key}</span>
                     </div>
                 `).join('')}
                 <div class="list-item mt-2" onclick="showAddProfile()">
@@ -435,7 +435,7 @@
         function showCommon() {
             hideAllForms();
             currentSection = 'common';
-            currentAge = null;
+            currentKey = null;
             
             const c = data.common;
             document.getElementById('common_birthday').value = c.birthday || '';
@@ -478,13 +478,13 @@
             HelperUtils.showToast('저장됨', 'success');
         }
 
-        function showProfile(age) {
+        function showProfile(key) {
             hideAllForms();
             currentSection = 'profile';
-            currentAge = age;
+            currentKey = key;
             
-            const p = data.profiles[age];
-            document.getElementById('profileAge').textContent = p.tabLabel || age + '세';
+            const p = data.profiles[key];
+            document.getElementById('profileKey').textContent = p.tabLabel || key;
             
             document.getElementById('profile_tabLabel').value = p.tabLabel || '';
             document.getElementById('profile_themeColor').value = p.themeColor || '';
@@ -541,20 +541,20 @@
         }
 
         function addRelation() {
-            const p = data.profiles[currentAge];
+            const p = data.profiles[currentKey];
             if (!p.relationships) p.relationships = [];
             p.relationships.push({ name: '새 관계', initial: '', detail: '' });
             renderRelations(p.relationships);
         }
 
         function removeRelation(idx) {
-            const p = data.profiles[currentAge];
+            const p = data.profiles[currentKey];
             p.relationships.splice(idx, 1);
             renderRelations(p.relationships);
         }
 
         function saveProfile() {
-            const p = data.profiles[currentAge];
+            const p = data.profiles[currentKey];
             
             p.tabLabel = document.getElementById('profile_tabLabel').value;
             p.themeColor = document.getElementById('profile_themeColor').value;
@@ -624,12 +624,12 @@
         }
 
         function createProfile() {
-            const age = document.getElementById('newProfileAge').value;
-            if (!age) return alert('나이를 입력하세요.');
-            if (data.profiles[age]) return alert('이미 존재하는 나이입니다.');
+            const key = document.getElementById('newProfileKey').value.trim();
+            if (!key) return alert('프로필 키를 입력하세요.');
+            if (data.profiles[key]) return alert('이미 존재하는 키입니다.');
             
-            data.profiles[age] = {
-                tabLabel: `${age}세`,
+            data.profiles[key] = {
+                tabLabel: key,
                 themeColor: '#888888',
                 name: { kr: '', en: '' },
                 image: '',
@@ -644,16 +644,17 @@
                 bgMusic: { youtubeId: '', title: '' }
             };
             
-            showProfile(age);
+            document.getElementById('newProfileKey').value = '';
+            showProfile(key);
             HelperUtils.showToast('프로필 생성됨', 'success');
         }
 
         function deleteProfile() {
-            if (!confirm(`${currentAge}세 프로필을 삭제하시겠습니까?`)) return;
-            delete data.profiles[currentAge];
+            if (!confirm(`"${currentKey}" 프로필을 삭제하시겠습니까?`)) return;
+            delete data.profiles[currentKey];
             hideAllForms();
             currentSection = null;
-            currentAge = null;
+            currentKey = null;
             renderSections();
         }
 
