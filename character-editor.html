@@ -34,6 +34,7 @@
             <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
                 placeholder="export const characterData = {...} 형식의 코드를 붙여넣으세요"></textarea>
             <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <button onclick="startNew()" class="btn btn-primary">새로 시작</button>
             <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500 cursor-not-allowed">
                 이미 불러왔습니다
             </div>
@@ -368,6 +369,26 @@
         let data = null;
         let currentSection = null;
         let currentAge = null;
+
+        function startNew() {
+            data = {
+                common: {
+                    birthday: "",
+                    birthFlower: "",
+                    birthTree: "",
+                    birthStone: "",
+                    birthColor: { name: "", hex: "#000000" },
+                    wand: { wood: "", core: "", length: "", flexibility: "" },
+                    bloodStatus: "",
+                    moehua: ""
+                },
+                profiles: {}
+            };
+            renderSections();
+            document.getElementById('inputBlocker').classList.remove('hidden');
+            document.getElementById('inputCode').disabled = true;
+            HelperUtils.showToast('새 캐릭터 데이터 시작! 프로필을 추가하세요.', 'success');
+        }
 
         function loadData() {
             const raw = document.getElementById('inputCode').value.trim();
