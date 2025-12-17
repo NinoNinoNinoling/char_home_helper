@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설정 편집기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="utils.js"></script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-100">
+
+    <nav class="bg-white border-b px-6 py-3 flex justify-between items-center z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-slate-500 hover:text-indigo-600"><i data-lucide="arrow-left"></i></a>
+            <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="sliders-horizontal" class="text-slate-600"></i> 설정 편집기
+            </h1>
+        </div>
+        <button onclick="exportData()" class="btn btn-success">
+            <i data-lucide="save" class="w-4 h-4"></i> 코드 생성
+        </button>
+    </nav>
+
+    <div class="bg-white border-b p-4 shrink-0">
+        <label class="form-label">📂 config.js 코드 붙여넣기</label>
+        <div class="flex gap-2 relative">
+            <textarea id="inputCode" rows="1" class="form-input flex-1 h-10 resize-none" 
+                placeholder="export const config = {...}"></textarea>
+            <button onclick="loadData()" class="btn btn-secondary">불러오기</button>
+            <div id="inputBlocker" class="absolute inset-0 bg-gray-100/80 hidden flex items-center justify-center text-xs font-bold text-gray-500">로드됨</div>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-hidden grid grid-cols-12">
+        <div class="col-span-3 bg-white border-r flex flex-col overflow-hidden">
+            <div class="p-3 bg-slate-50 border-b font-bold text-sm text-slate-700">설정 섹션</div>
+            <div id="sectionList" class="flex-1 overflow-y-auto p-2 space-y-1 bg-slate-50">
+                <div class="text-center text-gray-400 text-xs mt-10">데이터를 불러와주세요</div>
+            </div>
+        </div>
+
+        <div class="col-span-9 bg-slate-50 overflow-y-auto p-6">
+            <!-- 라벨 설정 -->
+            <div id="labelsForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header"><h2 class="font-bold">🏷️ 텍스트 라벨</h2></div>
+                <div class="card-body">
+                    <p class="text-sm text-slate-500 mb-4">화면에 표시되는 각종 라벨 텍스트를 수정합니다.</p>
+                    <div class="space-y-3" id="labelsContainer"></div>
+                    <div class="pt-4 border-t flex justify-end mt-4">
+                        <button onclick="saveLabels()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 테마 색상 -->
+            <div id="themeForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header"><h2 class="font-bold">🎨 테마 색상</h2></div>
+                <div class="card-body">
+                    <p class="text-sm text-slate-500 mb-4">사이트 전체 색상을 변경합니다.</p>
+                    <div class="grid grid-cols-2 gap-4" id="themeContainer"></div>
+                    <div class="pt-4 border-t flex justify-end mt-4">
+                        <button onclick="saveTheme()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기능 설정 -->
+            <div id="featuresForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header"><h2 class="font-bold">⚙️ 기능 ON/OFF</h2></div>
+                <div class="card-body">
+                    <div class="space-y-3" id="featuresContainer"></div>
+                    <div class="pt-4 border-t flex justify-end mt-4">
+                        <button onclick="saveFeatures()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기본값 설정 -->
+            <div id="defaultsForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header"><h2 class="font-bold">🔧 기본값</h2></div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="form-label">기본 나이 (캐릭터 탭)</label>
+                        <input type="number" id="defaults_age" class="form-input" placeholder="11">
+                    </div>
+                    <div>
+                        <label class="form-label">기본 섹션</label>
+                        <select id="defaults_section" class="form-input">
+                            <option value="dashboard">dashboard</option>
+                            <option value="playlist">playlist</option>
+                            <option value="motif">motif</option>
+                            <option value="guide">guide</option>
+                        </select>
+                    </div>
+                    <div class="pt-4 border-t flex justify-end">
+                        <button onclick="saveDefaults()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 타이밍 설정 -->
+            <div id="timingForm" class="hidden max-w-3xl mx-auto card">
+                <div class="card-header"><h2 class="font-bold">⏱️ 타이밍 (고급)</h2></div>
+                <div class="card-body">
+                    <p class="text-sm text-slate-500 mb-4">애니메이션/딜레이 시간 (ms). 잘 모르면 기본값 유지.</p>
+                    <div class="grid grid-cols-2 gap-4" id="timingContainer"></div>
+                    <div class="pt-4 border-t flex justify-end mt-4">
+                        <button onclick="saveTiming()" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 출력 -->
+            <div id="exportArea" class="hidden mt-6 code-output max-w-3xl mx-auto">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-green-400 font-bold">✅ 코드 생성 완료</span>
+                    <button onclick="copyCode()" class="btn btn-success text-sm">📋 복사</button>
+                </div>
+                <textarea id="exportResult" rows="25" class="w-full" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let data = null;
+        let currentSection = null;
+
+        const labelKeys = [
+            { key: 'name', label: '이름 섹션 제목' },
+            { key: 'basicInfo', label: '기본 정보 카드 제목' },
+            { key: 'birthInfo', label: '탄생 정보 카드 제목' },
+            { key: 'magicInfo', label: '마법 정보 카드 제목' },
+            { key: 'relationships', label: '관계 섹션 제목' },
+            { key: 'heightWeight', label: '키/체중 라벨' },
+            { key: 'affiliation', label: '소속 라벨' },
+            { key: 'nationality', label: '국적 라벨' },
+            { key: 'blood', label: '혈통 라벨' },
+            { key: 'birthday', label: '생일 라벨' },
+            { key: 'birthFlowerTree', label: '탄생화/탄생목 라벨' },
+            { key: 'birthStone', label: '탄생석 라벨' },
+            { key: 'birthColor', label: '탄생색 라벨' },
+            { key: 'wand', label: '지팡이 라벨' },
+            { key: 'wandLength', label: '지팡이 길이 라벨' },
+            { key: 'themeColor', label: '테마색 라벨' },
+            { key: 'moodSong', label: '무드곡 라벨' }
+        ];
+
+        const themeKeys = [
+            { key: 'background', label: '배경색' },
+            { key: 'secondary', label: '보조 배경' },
+            { key: 'tertiary', label: '3차 배경' },
+            { key: 'text', label: '텍스트' },
+            { key: 'highlight', label: '강조색' },
+            { key: 'border', label: '테두리' }
+        ];
+
+        const featureKeys = [
+            { key: 'showAgeTabs', label: '나이 탭 표시' },
+            { key: 'snowEffect', label: '눈 효과' }
+        ];
+
+        const timingKeys = [
+            { key: 'bgMusicInitDelay', label: '배경음악 초기화 딜레이' },
+            { key: 'iconRenderDelay', label: '아이콘 렌더 딜레이' },
+            { key: 'videoLoadDelay', label: '비디오 로드 딜레이' },
+            { key: 'bgMusicSwitchDelay', label: '배경음악 전환 딜레이' }
+        ];
+
+        function loadData() {
+            const raw = document.getElementById('inputCode').value.trim();
+            if (!raw) return alert('코드를 붙여넣어 주세요.');
+            try {
+                data = HelperUtils.parseExportData(raw, 'config');
+                renderSections();
+                document.getElementById('inputBlocker').classList.remove('hidden');
+                HelperUtils.showToast('로드 완료!', 'success');
+            } catch (e) { alert('로드 실패: ' + e.message); }
+        }
+
+        function renderSections() {
+            document.getElementById('sectionList').innerHTML = `
+                <div class="list-item ${currentSection === 'labels' ? 'active' : ''}" onclick="showLabels()">
+                    <span class="font-medium text-sm">🏷️ 텍스트 라벨</span>
+                </div>
+                <div class="list-item ${currentSection === 'theme' ? 'active' : ''}" onclick="showTheme()">
+                    <span class="font-medium text-sm">🎨 테마 색상</span>
+                </div>
+                <div class="list-item ${currentSection === 'features' ? 'active' : ''}" onclick="showFeatures()">
+                    <span class="font-medium text-sm">⚙️ 기능 ON/OFF</span>
+                </div>
+                <div class="list-item ${currentSection === 'defaults' ? 'active' : ''}" onclick="showDefaults()">
+                    <span class="font-medium text-sm">🔧 기본값</span>
+                </div>
+                <div class="list-item ${currentSection === 'timing' ? 'active' : ''}" onclick="showTiming()">
+                    <span class="font-medium text-sm">⏱️ 타이밍</span>
+                </div>
+            `;
+        }
+
+        function hideAll() {
+            ['labelsForm', 'themeForm', 'featuresForm', 'defaultsForm', 'timingForm', 'exportArea']
+                .forEach(id => document.getElementById(id).classList.add('hidden'));
+        }
+
+        function showLabels() {
+            hideAll();
+            currentSection = 'labels';
+            const container = document.getElementById('labelsContainer');
+            container.innerHTML = labelKeys.map(({ key, label }) => `
+                <div class="flex items-center gap-3">
+                    <label class="w-40 text-sm text-slate-600">${label}</label>
+                    <input type="text" class="form-input flex-1 label-input" data-key="${key}" 
+                        value="${data.labels?.[key] || ''}">
+                </div>
+            `).join('');
+            document.getElementById('labelsForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function saveLabels() {
+            if (!data.labels) data.labels = {};
+            document.querySelectorAll('.label-input').forEach(input => {
+                data.labels[input.dataset.key] = input.value;
+            });
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showTheme() {
+            hideAll();
+            currentSection = 'theme';
+            const container = document.getElementById('themeContainer');
+            container.innerHTML = themeKeys.map(({ key, label }) => {
+                const value = data.theme?.colors?.[key] || '';
+                const isColor = value.startsWith('#') || value.startsWith('rgb');
+                return `
+                    <div>
+                        <label class="form-label">${label}</label>
+                        <div class="flex gap-2">
+                            ${isColor ? `<input type="color" class="w-10 h-10 rounded theme-picker" data-key="${key}" value="${value.startsWith('#') ? value : '#000000'}">` : ''}
+                            <input type="text" class="form-input flex-1 theme-input" data-key="${key}" value="${value}">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 피커 동기화
+            container.querySelectorAll('.theme-picker').forEach(picker => {
+                picker.addEventListener('input', e => {
+                    const input = container.querySelector(`.theme-input[data-key="${e.target.dataset.key}"]`);
+                    if (input) input.value = e.target.value;
+                });
+            });
+            
+            document.getElementById('themeForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function saveTheme() {
+            if (!data.theme) data.theme = {};
+            if (!data.theme.colors) data.theme.colors = {};
+            document.querySelectorAll('.theme-input').forEach(input => {
+                data.theme.colors[input.dataset.key] = input.value;
+            });
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showFeatures() {
+            hideAll();
+            currentSection = 'features';
+            const container = document.getElementById('featuresContainer');
+            container.innerHTML = featureKeys.map(({ key, label }) => `
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" class="w-5 h-5 feature-input" data-key="${key}" 
+                        ${data.features?.[key] ? 'checked' : ''}>
+                    <span class="text-sm">${label}</span>
+                </label>
+            `).join('');
+            document.getElementById('featuresForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function saveFeatures() {
+            if (!data.features) data.features = {};
+            document.querySelectorAll('.feature-input').forEach(input => {
+                data.features[input.dataset.key] = input.checked;
+            });
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showDefaults() {
+            hideAll();
+            currentSection = 'defaults';
+            document.getElementById('defaults_age').value = data.defaults?.age || 11;
+            document.getElementById('defaults_section').value = data.defaults?.section || 'dashboard';
+            document.getElementById('defaultsForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function saveDefaults() {
+            if (!data.defaults) data.defaults = {};
+            data.defaults.age = parseInt(document.getElementById('defaults_age').value) || 11;
+            data.defaults.section = document.getElementById('defaults_section').value;
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function showTiming() {
+            hideAll();
+            currentSection = 'timing';
+            const container = document.getElementById('timingContainer');
+            container.innerHTML = timingKeys.map(({ key, label }) => `
+                <div>
+                    <label class="form-label">${label}</label>
+                    <input type="number" class="form-input timing-input" data-key="${key}" 
+                        value="${data.timing?.[key] || 0}">
+                </div>
+            `).join('');
+            document.getElementById('timingForm').classList.remove('hidden');
+            renderSections();
+        }
+
+        function saveTiming() {
+            if (!data.timing) data.timing = {};
+            document.querySelectorAll('.timing-input').forEach(input => {
+                data.timing[input.dataset.key] = parseInt(input.value) || 0;
+            });
+            HelperUtils.showToast('저장됨', 'success');
+        }
+
+        function exportData() {
+            // 현재 섹션 저장
+            if (currentSection === 'labels') saveLabels();
+            if (currentSection === 'theme') saveTheme();
+            if (currentSection === 'features') saveFeatures();
+            if (currentSection === 'defaults') saveDefaults();
+            if (currentSection === 'timing') saveTiming();
+
+            const code = HelperUtils.generateConfigCode(data);
+            document.getElementById('exportArea').classList.remove('hidden');
+            document.getElementById('exportResult').value = code;
+            document.getElementById('exportArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyCode() {
+            HelperUtils.copyToClipboard(document.getElementById('exportResult').value);
+            HelperUtils.showToast('복사되었습니다!', 'success');
+        }
+    </script>
+</body>
+</html>
