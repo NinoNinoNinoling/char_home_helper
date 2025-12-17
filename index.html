@@ -3,43 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Tools</title>
+    <title>Character Home Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body class="flex items-center justify-center min-h-screen p-6">
 
-    <div class="max-w-4xl w-full">
-        <header class="text-center mb-12">
+    <div class="max-w-5xl w-full">
+        <header class="text-center mb-10">
             <h1 class="text-4xl font-bold text-slate-800 mb-2 flex justify-center items-center gap-3">
-                <i data-lucide="wrench" class="w-10 h-10 text-indigo-600"></i> Character Home Admin
+                <i data-lucide="wrench" class="w-10 h-10 text-indigo-600"></i> 
+                Character Home Admin
             </h1>
-            <p class="text-slate-500">홈페이지 데이터 관리를 위한 도구를 선택하세요.</p>
+            <p class="text-slate-500">홈페이지 데이터 관리를 위한 도구 모음</p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            <a href="generator.html" class="menu-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center text-center cursor-pointer hover:border-indigo-300 group">
-                <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition">
-                    <i data-lucide="plus" class="w-8 h-8 text-indigo-600"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">곡 추가 마법사</h2>
-                <p class="text-slate-500 text-sm">새로운 노래를 하나씩 빠르게 추가하고<br>코드를 생성합니다.</p>
-            </a>
+        <!-- 플레이리스트 섹션 -->
+        <section class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="music" class="w-5 h-5 text-indigo-600"></i>
+                <h2 class="text-lg font-bold text-slate-700">플레이리스트</h2>
+                <span class="badge badge-primary">playlist.js</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="playlist-generator.html" class="menu-card bg-white p-6 rounded-xl border border-slate-200 flex items-start gap-4 hover:border-indigo-300 group">
+                    <div class="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center group-hover:bg-indigo-100 transition shrink-0">
+                        <i data-lucide="plus" class="w-6 h-6 text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-1">곡 추가 마법사</h3>
+                        <p class="text-slate-500 text-sm">새로운 노래를 하나씩 빠르게 추가</p>
+                    </div>
+                </a>
+                <a href="playlist-editor.html" class="menu-card bg-white p-6 rounded-xl border border-slate-200 flex items-start gap-4 hover:border-green-300 group">
+                    <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center group-hover:bg-green-100 transition shrink-0">
+                        <i data-lucide="list-music" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-1">통합 편집기</h3>
+                        <p class="text-slate-500 text-sm">전체 곡 수정, 삭제, 순서 변경</p>
+                    </div>
+                </a>
+            </div>
+        </section>
 
-            <a href="editor.html" class="menu-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center text-center cursor-pointer hover:border-green-300 group">
-                <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-100 transition">
-                    <i data-lucide="list-music" class="w-8 h-8 text-green-600"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">통합 편집기</h2>
-                <p class="text-slate-500 text-sm">전체 데이터를 불러와서<br>수정, 삭제, 순서 변경을 수행합니다.</p>
-            </a>
+        <!-- 캐릭터 섹션 -->
+        <section class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="user" class="w-5 h-5 text-purple-600"></i>
+                <h2 class="text-lg font-bold text-slate-700">캐릭터</h2>
+                <span class="badge badge-primary">character.js</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="character-editor.html" class="menu-card bg-white p-6 rounded-xl border border-slate-200 flex items-start gap-4 hover:border-purple-300 group">
+                    <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition shrink-0">
+                        <i data-lucide="user-cog" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-1">캐릭터 편집기</h3>
+                        <p class="text-slate-500 text-sm">공통 정보 + 나이별 프로필 관리</p>
+                    </div>
+                </a>
+            </div>
+        </section>
 
-        </div>
+        <!-- 오너 & 모티프 섹션 -->
+        <section class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="id-card" class="w-5 h-5 text-teal-600"></i>
+                <h2 class="text-lg font-bold text-slate-700">오너 & 모티프</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="owner-editor.html" class="menu-card bg-white p-6 rounded-xl border border-slate-200 flex items-start gap-4 hover:border-teal-300 group">
+                    <div class="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center group-hover:bg-teal-100 transition shrink-0">
+                        <i data-lucide="id-card" class="w-6 h-6 text-teal-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-1">오너 프로필 편집기</h3>
+                        <p class="text-slate-500 text-sm">오너 소개, 교류/연성 정보 관리</p>
+                        <span class="badge badge-primary mt-1">owner.js</span>
+                    </div>
+                </a>
+                <a href="motif-editor.html" class="menu-card bg-white p-6 rounded-xl border border-slate-200 flex items-start gap-4 hover:border-orange-300 group">
+                    <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center group-hover:bg-orange-100 transition shrink-0">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-orange-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-1">모티프 편집기</h3>
+                        <p class="text-slate-500 text-sm">모티프 캐릭터 추가/수정/삭제</p>
+                        <span class="badge badge-primary mt-1">motif.js</span>
+                    </div>
+                </a>
+            </div>
+        </section>
 
-        <footer class="text-center mt-12 text-slate-400 text-xs">
-            &copy; Character Home Helper Repository
+        <!-- 설정 섹션 -->
+        <section class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="settings" class="w-5 h-5 text-slate-600"></i>
+                <h2 class="text-lg font-bold text-slate-700">설정</h2>
+                <span class="badge badge-primary">config.js</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="config-editor.html" class="menu-card bg-white p-6 rounded-xl border border-slate-200 flex items-start gap-4 hover:border-slate-400 group">
+                    <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition shrink-0">
+                        <i data-lucide="sliders-horizontal" class="w-6 h-6 text-slate-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-1">설정 편집기</h3>
+                        <p class="text-slate-500 text-sm">라벨명, 테마 색상, 기능 ON/OFF</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <footer class="text-center mt-10 text-slate-400 text-xs">
+            &copy; Character Home Helper v2.0
         </footer>
     </div>
 
