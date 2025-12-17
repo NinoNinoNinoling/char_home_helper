@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>곡 추가 마법사</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="utils.js"></script>
+</head>
+<body class="min-h-screen p-6">
+
+    <div class="max-w-3xl mx-auto">
+        <!-- 헤더 -->
+        <div class="flex items-center gap-4 mb-6">
+            <a href="index.html" class="text-slate-500 hover:text-indigo-600">
+                <i data-lucide="arrow-left"></i>
+            </a>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="plus-circle" class="text-indigo-600"></i>
+                곡 추가 마법사
+            </h1>
+        </div>
+
+        <!-- 기존 코드 입력 -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <h2 class="font-bold text-slate-700">1️⃣ 기존 playlist.js 코드 (선택)</h2>
+            </div>
+            <div class="card-body">
+                <textarea id="existingCode" rows="3" class="form-input form-textarea" 
+                    placeholder="기존 코드가 있으면 붙여넣으세요. 새로 시작하려면 비워두세요."></textarea>
+            </div>
+        </div>
+
+        <!-- 새 곡 정보 -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <h2 class="font-bold text-slate-700">2️⃣ 새 곡 정보 입력</h2>
+            </div>
+            <div class="card-body space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">곡 제목 *</label>
+                        <input type="text" id="title" class="form-input" placeholder="곡 제목">
+                    </div>
+                    <div>
+                        <label class="form-label">아티스트</label>
+                        <input type="text" id="artist" class="form-input" placeholder="아티스트명">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">YouTube 링크 *</label>
+                    <input type="text" id="link" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+
+                <div>
+                    <label class="form-label">해시태그 (쉼표로 구분)</label>
+                    <input type="text" id="hashtags" class="form-input" placeholder="#태그1, #태그2, #태그3">
+                </div>
+
+                <div>
+                    <label class="form-label">코멘트</label>
+                    <input type="text" id="comment" class="form-input" placeholder="이 곡에 대한 한줄평">
+                </div>
+
+                <div>
+                    <label class="form-label flex justify-between">
+                        <span>가사</span>
+                        <select id="formatOption" class="text-xs border rounded px-2 py-1">
+                            <option value="0">포맷 없음</option>
+                            <option value="3">3줄마다 빈 줄</option>
+                            <option value="4">빈 줄 정리</option>
+                            <option value="5">빈 줄 제거</option>
+                        </select>
+                    </label>
+                    <textarea id="lyrics" rows="8" class="form-input form-textarea"></textarea>
+                </div>
+
+                <div>
+                    <label class="form-label">가사 출처 URL (선택)</label>
+                    <input type="text" id="source" class="form-input" placeholder="https://...">
+                </div>
+            </div>
+        </div>
+
+        <!-- 생성 버튼 -->
+        <div class="flex justify-center mb-6">
+            <button onclick="generate()" class="btn btn-primary text-lg px-8 py-3">
+                <i data-lucide="wand-2" class="w-5 h-5"></i>
+                코드 생성
+            </button>
+        </div>
+
+        <!-- 결과 -->
+        <div id="resultArea" class="hidden">
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <h2 class="font-bold text-green-600">✅ 생성 완료</h2>
+                    <button onclick="copyResult()" class="btn btn-success text-sm">📋 복사</button>
+                </div>
+                <div class="card-body">
+                    <textarea id="result" rows="15" class="form-input form-textarea font-mono text-xs bg-slate-900 text-green-400" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function generate() {
+            const title = document.getElementById('title').value.trim();
+            const link = document.getElementById('link').value.trim();
+            
+            if (!title) return alert('곡 제목을 입력하세요.');
+            if (!link) return alert('YouTube 링크를 입력하세요.');
+
+            const artist = document.getElementById('artist').value.trim();
+            const comment = document.getElementById('comment').value.trim();
+            const formatOpt = parseInt(document.getElementById('formatOption').value);
+            const source = document.getElementById('source').value.trim();
+            let lyrics = document.getElementById('lyrics').value;
+            
+            // 가사 포맷
+            lyrics = HelperUtils.formatLyrics(lyrics, formatOpt, source);
+
+            // 해시태그 파싱
+            const hashtagsRaw = document.getElementById('hashtags').value;
+            const hashtags = hashtagsRaw.split(',')
+                .map(t => t.trim())
+                .filter(t => t)
+                .map(t => t.startsWith('#') ? t : '#' + t);
+
+            // 기존 코드에서 다음 ID 계산
+            let nextId = 1;
+            const existingCode = document.getElementById('existingCode').value.trim();
+            let existingItems = [];
+            
+            if (existingCode) {
+                try {
+                    existingItems = HelperUtils.parseExportData(existingCode, 'playlistData');
+                    nextId = HelperUtils.getNextId(existingItems);
+                } catch (e) {
+                    alert('기존 코드 파싱 실패: ' + e.message);
+                    return;
+                }
+            }
+
+            // 새 곡 추가
+            existingItems.push({
+                id: nextId,
+                title,
+                artist,
+                link,
+                hashtags,
+                comment,
+                lyrics
+            });
+
+            // 코드 생성
+            const code = HelperUtils.generatePlaylistCode(existingItems);
+            
+            document.getElementById('result').value = code;
+            document.getElementById('resultArea').classList.remove('hidden');
+            document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyResult() {
+            const code = document.getElementById('result').value;
+            HelperUtils.copyToClipboard(code);
+            HelperUtils.showToast('복사되었습니다!', 'success');
+        }
+    </script>
+</body>
+</html>
