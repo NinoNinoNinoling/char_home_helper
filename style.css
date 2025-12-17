@@ -1,27 +1,274 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+/* ============================================================
+   Character Home Helper - 공통 스타일
+   ============================================================ */
+
+/* 기본 리셋 */
+* { box-sizing: border-box; }
 
 body {
-    font-family: "Pretendard Variable", sans-serif;
-    background-color: #f8fafc;
-    color: #1e293b;
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
 }
 
-textarea, input, select {
-    font-family: monospace;
-    font-size: 0.875rem;
-}
-
-/* 스크롤바 커스텀 */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* 카드 호버 효과 */
+/* 메뉴 카드 hover */
 .menu-card {
-    transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease;
 }
 .menu-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* 폼 요소 공통 */
+.form-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* 버튼 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: white;
+}
+.btn-primary:hover {
+    background: #4f46e5;
+}
+
+.btn-success {
+    background: #22c55e;
+    color: white;
+}
+.btn-success:hover {
+    background: #16a34a;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.btn-secondary {
+    background: #64748b;
+    color: white;
+}
+.btn-secondary:hover {
+    background: #475569;
+}
+
+/* 카드 */
+.card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* 리스트 아이템 */
+.list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.list-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+.list-item.active {
+    background: #eef2ff;
+    border-color: #6366f1;
+}
+
+/* 코드 출력 영역 */
+.code-output {
+    background: #1e293b;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.code-output textarea {
+    width: 100%;
+    background: #0f172a;
+    color: #4ade80;
+    border: 1px solid #334155;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.75rem;
+    resize: vertical;
+}
+
+/* 섹션 헤더 */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* 그리드 유틸 */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+/* 색상 미리보기 */
+.color-preview-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+/* 탭 */
+.tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+}
+.tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.tab:hover {
+    color: #1e293b;
+}
+.tab.active {
+    background: white;
+    color: #6366f1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 배지 */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.badge-primary { background: #eef2ff; color: #6366f1; }
+.badge-success { background: #dcfce7; color: #16a34a; }
+.badge-warning { background: #fef3c7; color: #d97706; }
+
+/* 토스트/알림 */
+.toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: #1e293b;
+    color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* 스크롤바 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
